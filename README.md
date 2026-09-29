@@ -1,6 +1,6 @@
 # Game Template
 
-Unity 2022.3 game project template backed by the independently versioned Alloy Framework package.
+Unity 2022.3 3D URP game project template backed by the independently versioned Alloy Framework package.
 
 ## Setup
 

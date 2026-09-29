@@ -1,0 +1,15 @@
+{
+  "framework": {
+    "repository": "git@github.com:Jin8868/AlloyFramework.git",
+    "branch": "main",
+    "directory": "AlloyFramework"
+  },
+  "unity": {
+    "version": "2022.3.17f1c1",
+    "projectDirectory": "UnityProj"
+  },
+  "git": {
+    "pullRebase": true,
+    "fetchPrune": true
+  }
+}

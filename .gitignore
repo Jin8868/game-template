@@ -1,0 +1,47 @@
+# Local framework checkout (managed by setup scripts)
+/AlloyFramework/
+
+# Unity generated directories
+/UnityProj/[Ll]ibrary/
+/UnityProj/[Tt]emp/
+/UnityProj/[Oo]bj/
+/UnityProj/[Bb]uild/
+/UnityProj/[Bb]uilds/
+/UnityProj/[Ll]ogs/
+/UnityProj/[Uu]ser[Ss]ettings/
+/UnityProj/[Mm]emoryCaptures/
+/UnityProj/[Rr]ecordings/
+
+# Generated directories left behind when migrating the project into UnityProj
+/Assets/
+/Packages/
+/ProjectSettings/
+/UserSettings/
+/Library/
+/Temp/
+/Logs/
+
+# IDE generated files
+/.idea/
+/UnityProj/.idea/
+/.vs/
+/UnityProj/.vs/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Unity crash reports
+sysinfo.txt

@@ -1,0 +1,12 @@
+* text=auto
+
+*.cs text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.asset text eol=lf
+*.meta text eol=lf
+*.unity text eol=lf
+*.prefab text eol=lf

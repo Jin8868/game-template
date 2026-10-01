@@ -7,18 +7,25 @@ namespace Game
 {
     public sealed class GameEntry : IGameEntry
     {
+        private ISceneHandle m_sceneHandle;
+        
         public async UniTask MainAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             AlloyDebug.Log("Game entry started.");
             
-            await ResourceManager.Instance.LoadSceneAsync(
+            m_sceneHandle = await ResourceManager.Instance.LoadSceneAsync(
                 "Scenes/SampleScene",
                 cancellationToken: cancellationToken);
         }
 
-        public void Shutdown()
+        public async UniTask ShutdownAsync()
         {
+            var sceneHandle = m_sceneHandle;
+            m_sceneHandle = null;
+
+            if (sceneHandle != null && !sceneHandle.IsUnloaded)
+                await sceneHandle.UnloadAsync();
         }
     }
 

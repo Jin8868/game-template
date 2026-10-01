@@ -1,0 +1,170 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 185f6993d5150494d98da50e26cb1c25, type: 3}
+  m_Name: AssetBundleCollectorSetting
+  m_EditorClassIdentifier: 
+  ShowPackageView: 0
+  ShowEditorAlias: 0
+  UniqueBundleName: 0
+  Packages:
+  - PackageName: DefaultPackage
+    PackageDesc: Game runtime resources
+    EnableAddressable: 1
+    SupportExtensionless: 1
+    LocationToLower: 0
+    IncludeAssetGUID: 0
+    AutoCollectShaders: 1
+    IgnoreRuleName: NormalIgnoreRule
+    Groups:
+    - GroupName: animations
+      GroupDesc: Animation resources
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/Animations
+        CollectorGUID: 7068a61f330c3af4baa9ed302bd71055
+        CollectorType: 0
+        AddressRuleName: AddressByResPath
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+    - GroupName: atlas
+      GroupDesc: Sprite atlas resources
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/Atlas
+        CollectorGUID: ccfc8a93a6914604cb5fd154a8a8086d
+        CollectorType: 0
+        AddressRuleName: AddressByResPath
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+    - GroupName: audio
+      GroupDesc: Audio resources
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/Audio
+        CollectorGUID: 421617068e6fa5443a7c5cb099582dd4
+        CollectorType: 0
+        AddressRuleName: AddressByResPath
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+    - GroupName: config
+      GroupDesc: Generated config data
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/Config
+        CollectorGUID: 4352c73cd90c26740b5dd137cb835812
+        CollectorType: 0
+        AddressRuleName: AddressByResPath
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+    - GroupName: code
+      GroupDesc: Hot-update assemblies and AOT metadata
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/Code
+        CollectorGUID: db43d7aeeaa341718737fa93b4cb8774
+        CollectorType: 0
+        AddressRuleName: AddressByResPath
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: buildin;code
+        UserData: 
+    - GroupName: fonts
+      GroupDesc: Font resources
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/Fonts
+        CollectorGUID: e09668ac590ef074d91480c45650ce9e
+        CollectorType: 0
+        AddressRuleName: AddressByResPath
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+    - GroupName: materials
+      GroupDesc: Material resources
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/Materials
+        CollectorGUID: f81d5d718ca64d740a7ad1b33d2d850c
+        CollectorType: 0
+        AddressRuleName: AddressByResPath
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+    - GroupName: prefabs
+      GroupDesc: Prefab resources
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/Prefabs
+        CollectorGUID: a8b9c33d5a31de940b2f617098c0e219
+        CollectorType: 0
+        AddressRuleName: AddressByResPath
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectPrefab
+        AssetTags: 
+        UserData: 
+    - GroupName: scenes
+      GroupDesc: Hot-update scenes excluding enabled Build Settings scenes
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/Scenes
+        CollectorGUID: 43f6ea9f46345f7419ddd2403b972f32
+        CollectorType: 0
+        AddressRuleName: AddressByResPath
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectHotUpdateScene
+        AssetTags: 
+        UserData: 
+    - GroupName: textures
+      GroupDesc: Texture resources
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/Textures
+        CollectorGUID: 83871e3e5ce9cf9458dfca9ef9ab3ad4
+        CollectorType: 0
+        AddressRuleName: AddressByResPath
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+    - GroupName: video
+      GroupDesc: VideoClip resources
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/Video
+        CollectorGUID: 292c8f51de9587e4b95253590fa88996
+        CollectorType: 0
+        AddressRuleName: AddressByResPath
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 

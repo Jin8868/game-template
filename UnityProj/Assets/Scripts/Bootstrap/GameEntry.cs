@@ -7,12 +7,14 @@ namespace Game
 {
     public sealed class GameEntry : IGameEntry
     {
-        public UniTask MainAsync(CancellationToken cancellationToken)
+        public async UniTask MainAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
             AlloyDebug.Log("Game entry started.");
-            return UniTask.CompletedTask;
+            
+            await ResourceManager.Instance.LoadSceneAsync(
+                "Scenes/SampleScene",
+                cancellationToken: cancellationToken);
         }
 
         public void Shutdown()

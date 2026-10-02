@@ -3,7 +3,9 @@
   "rootNamespace": "Game",
   "references": [
     "Alloy.Runtime",
-    "UniTask"
+    "UniTask",
+    "Unity.TextMeshPro",
+    "Unity.ugui"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

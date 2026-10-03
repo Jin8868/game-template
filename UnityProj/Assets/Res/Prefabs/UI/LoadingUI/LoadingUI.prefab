@@ -322,6 +322,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6614097394732984071}
   - component: {fileID: 3747332463847738320}
+  - component: {fileID: 961895051756742877}
   m_Layer: 5
   m_Name: LoadingUI
   m_TagString: Untagged
@@ -368,6 +369,18 @@ MonoBehaviour:
   m_sliderProgress: {fileID: 1032893985636019219}
   m_txtLoding: {fileID: 111279955829927455}
   m_txtPercent: {fileID: 6787757636469541283}
+--- !u!225 &961895051756742877
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5220505154570004289}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &5924609834552527036
 GameObject:
   m_ObjectHideFlags: 0

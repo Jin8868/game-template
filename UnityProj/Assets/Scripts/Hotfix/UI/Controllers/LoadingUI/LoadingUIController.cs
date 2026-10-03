@@ -86,5 +86,15 @@ namespace Game.UI
         protected override void OnDispose()
         {
         }
+        
+        public void RefreshProgress(float progress)
+        {
+            View.SliderProgress.value = progress;
+            
+            float progressValue = progress * 100f;
+            View.TxtPercent.text = string.Format("{0}%", progressValue);
+        }
+        
+        
     }
 }

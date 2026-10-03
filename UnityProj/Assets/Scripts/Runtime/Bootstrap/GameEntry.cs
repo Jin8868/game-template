@@ -4,9 +4,11 @@ using AlloyFramework.UI;
 using Cysharp.Threading.Tasks;
 using Game.UI;
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Game
 {
+    [Preserve]
     public sealed class GameEntry : IGameEntry
     {
         private ISceneHandle m_sceneHandle;
@@ -57,15 +59,6 @@ namespace Game
 
             if (normalizedProgress >= 1f)
                 CloseLoadingAsync().Forget(exception => AlloyDebug.Error(exception));
-        }
-    }
-
-    internal static class GameEntryInjector
-    {
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-        private static void Inject()
-        {
-            FrameworkBootstrap.SetGameEntry(new GameEntry());
         }
     }
 }

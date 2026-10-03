@@ -1,5 +1,5 @@
 {
-  "name": "Game.Hotfix",
+  "name": "Game.Runtime",
   "rootNamespace": "Game",
   "references": [
     "Alloy.Runtime",

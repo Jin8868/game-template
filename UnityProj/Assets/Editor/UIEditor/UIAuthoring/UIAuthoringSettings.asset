@@ -16,8 +16,8 @@ MonoBehaviour:
   - m_prefabGuid: f0b602c1fb38b55448bfb406139bc69f
     m_uiName: LoadingUI
     m_scriptNamespace: Game.UI
-    m_viewFolder: Assets/Scripts/Hotfix/UI/Views/LoadingUI
-    m_controllerFolder: Assets/Scripts/Hotfix/UI/Controllers/LoadingUI
+    m_viewFolder: Assets/Scripts/Runtime/UI/Views/LoadingUI
+    m_controllerFolder: Assets/Scripts/Runtime/UI/Controllers/LoadingUI
     m_hasGenerated: 1
     m_layer: 100
     m_layout: 1

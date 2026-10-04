@@ -9,7 +9,6 @@ namespace Game.UI
     {
         private static readonly Dictionary<string, UIDefinition> m_definitions =
             CreateDefinitions(); // 生成的全部 UI 定义。
-
         /// <summary>
         /// 按名称查询业务 UI 定义的提供器。
         /// </summary>
@@ -18,13 +17,12 @@ namespace Game.UI
 
         private static Dictionary<string, UIDefinition> CreateDefinitions()
         {
-            var definitions = new Dictionary<string, UIDefinition>(2);
+            var definitions = new Dictionary<string, UIDefinition>(4);
             AddDefinitions0(definitions);
             return definitions;
         }
 
-        private static void AddDefinitions0(
-            Dictionary<string, UIDefinition> definitions)
+        private static void AddDefinitions0(Dictionary<string, UIDefinition> definitions)
         {
             // 注册 LoadingUI 的静态界面定义。
             definitions.Add(
@@ -41,11 +39,40 @@ namespace Game.UI
                     .PauseCovered(false)
                     .Build());
 
+            // 注册 NavigationDetailUI 的静态界面定义。
+            definitions.Add(
+                "NavigationDetailUI",
+                new UIDefinitionBuilder<NavigationDetailUIView, NavigationDetailUIController>("NavigationDetailUI")
+                    .Location("Prefabs/UI/NavigationUI/NavigationDetailUI")
+                    .Layer(UILayer.WINDOW)
+                    .Layout(UILayoutMode.Window)
+                    .Background(UIBackgroundMode.None)
+                    .Input(UIInputMode.Block)
+                    .Cache(UICacheMode.DestroyOnClose)
+                    .OpenMode(UIOpenMode.SingleRefresh)
+                    .Navigation(UINavigationMode.None)
+                    .PauseCovered(false)
+                    .Build());
+
+            // 注册 NavigationHomeUI 的静态界面定义。
+            definitions.Add(
+                "NavigationHomeUI",
+                new UIDefinitionBuilder<NavigationHomeUIView, NavigationHomeUIController>("NavigationHomeUI")
+                    .Location("Prefabs/UI/NavigationUI/NavigationHomeUI")
+                    .Layer(UILayer.WINDOW)
+                    .Layout(UILayoutMode.Window)
+                    .Background(UIBackgroundMode.None)
+                    .Input(UIInputMode.Block)
+                    .Cache(UICacheMode.DestroyOnClose)
+                    .OpenMode(UIOpenMode.SingleRefresh)
+                    .Navigation(UINavigationMode.None)
+                    .PauseCovered(false)
+                    .Build());
+
             // 注册 NavigationPopupUI 的静态界面定义。
             definitions.Add(
                 "NavigationPopupUI",
-                new UIDefinitionBuilder<NavigationPopupUIView, NavigationPopupUIController>(
-                    "NavigationPopupUI")
+                new UIDefinitionBuilder<NavigationPopupUIView, NavigationPopupUIController>("NavigationPopupUI")
                     .Location("Prefabs/UI/NavigationUI/NavigationPopupUI")
                     .Layer(UILayer.POPUP)
                     .Layout(UILayoutMode.Window)
@@ -56,6 +83,7 @@ namespace Game.UI
                     .Navigation(UINavigationMode.None)
                     .PauseCovered(false)
                     .Build());
+
         }
     }
 }

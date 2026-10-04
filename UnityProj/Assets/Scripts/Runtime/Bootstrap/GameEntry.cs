@@ -4,6 +4,7 @@ using AlloyFramework.UI;
 using Cysharp.Threading.Tasks;
 using Game.UI;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Scripting;
 
 namespace Game
@@ -11,6 +12,8 @@ namespace Game
     [Preserve]
     public sealed class GameEntry : IGameEntry
     {
+        private const string SHUTDOWNSCENENAME = "AlloyFrameworkShutdown";
+
         private ISceneHandle m_sceneHandle; // 当前加载的游戏场景句柄。
         private UIHandle<LoadingUIController> m_loadingHandle; // 启动加载界面的运行时句柄。
 
@@ -40,6 +43,12 @@ namespace Game
                 "Scenes/SampleScene",
                 LoadCallBack,
                 cancellationToken: cancellationToken);
+
+            // 场景加载完成后关闭启动界面，并通过配置 ID 进入导航验证首页。
+            await CloseLoadingAsync();
+            await UIManager.Instance.JumpAsync(
+                NavigationJumpID.HOME,
+                cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -57,6 +66,7 @@ namespace Game
 
             if (sceneHandle != null && !sceneHandle.IsUnloaded)
             {
+                EnsureSceneCanUnload(sceneHandle);
                 await sceneHandle.UnloadAsync();
             }
 
@@ -72,6 +82,20 @@ namespace Game
             }
         }
 
+        private static void EnsureSceneCanUnload(ISceneHandle sceneHandle)
+        {
+            if (SceneManager.sceneCount != 1 ||
+                !sceneHandle.Scene.IsValid() ||
+                !sceneHandle.Scene.isLoaded)
+            {
+                return;
+            }
+
+            // Unity 不允许卸载最后一个场景，先建立空场景承接关闭阶段。
+            var shutdownScene = SceneManager.CreateScene(SHUTDOWNSCENENAME);
+            SceneManager.SetActiveScene(shutdownScene);
+        }
+
         private void LoadCallBack(float progress)
         {
             var loadingHandle = m_loadingHandle;
@@ -82,16 +106,6 @@ namespace Game
 
             var normalizedProgress = Mathf.Clamp01(progress);
             loadingHandle.Controller.RefreshProgress(normalizedProgress);
-
-            if (normalizedProgress >= 1f)
-            {
-                CloseLoadingAsync().Forget(LogCloseLoadingException);
-            }
-        }
-
-        private static void LogCloseLoadingException(System.Exception exception)
-        {
-            AlloyDebug.Error(exception);
         }
     }
 }

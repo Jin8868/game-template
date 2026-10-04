@@ -18,7 +18,7 @@ MonoBehaviour:
     m_scriptNamespace: Game.UI
     m_viewFolder: Assets/Scripts/Runtime/UI/Views/NavigationUI
     m_controllerFolder: Assets/Scripts/Runtime/UI/Controllers/NavigationUI
-    m_hasGenerated: 0
+    m_hasGenerated: 1
     m_layer: 100
     m_layout: 1
     m_background: 0
@@ -32,7 +32,7 @@ MonoBehaviour:
     m_scriptNamespace: Game.UI
     m_viewFolder: Assets/Scripts/Runtime/UI/Views
     m_controllerFolder: Assets/Scripts/Runtime/UI/Controllers
-    m_hasGenerated: 0
+    m_hasGenerated: 1
     m_layer: 200
     m_layout: 1
     m_background: 0

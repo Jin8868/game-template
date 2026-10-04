@@ -1,89 +1,88 @@
-using System.Threading;
+using System;
+using AlloyFramework;
 using AlloyFramework.UI;
-using Cysharp.Threading.Tasks;
 
 namespace Game.UI
 {
     public sealed class NavigationDetailUIController : UIController<NavigationDetailUIView>
     {
-        // Controller 和 View 首次创建后调用一次。
         protected override void OnCreate()
         {
+            View.BtnBack.onClick.AddListener(Back);
+            View.BtnOpenDetail.onClick.AddListener(OpenPopup);
+            View.BtnSkipBack.onClick.AddListener(OpenSkipBackPopup);
         }
 
-        // 每次打开前调用，可以异步准备数据和资源。
-        protected override UniTask OnPrepareAsync(
-            UIEmptyData data, CancellationToken cancellationToken)
-        {
-            return UniTask.CompletedTask;
-        }
-
-        // 每次打开时初始化界面数据。
         protected override void OnInitData(UIEmptyData data)
         {
+            View.TxtStatus.text = "详情页已打开，首页应处于暂停状态。";
         }
 
-        // 已打开的界面以刷新模式再次打开时调用。
         protected override void OnRefresh(UIEmptyData data)
         {
+            View.TxtStatus.text = "详情页已刷新。";
         }
 
-        // 开始播放打开动画前调用。
-        protected override void OnStartOpenAnimation()
-        {
-        }
-
-        // 返回打开动画任务；没有动画时直接返回已完成任务。
-        protected override UniTask OnOpenAnimationAsync(
-            CancellationToken cancellationToken)
-        {
-            return UniTask.CompletedTask;
-        }
-
-        // 打开动画执行完成后调用。
-        protected override void OnEndOpenAnimation()
-        {
-        }
-
-        // 界面完成打开并可以交互后调用。
-        protected override void OnOpen()
-        {
-        }
-
-        // 界面被更高层界面暂停时调用。
         protected override void OnPause()
         {
+            View.TxtStatus.text = "详情页已暂停。";
         }
 
-        // 界面从暂停状态恢复时调用。
         protected override void OnResume()
         {
+            View.TxtStatus.text = "详情页已恢复。";
         }
 
-        // 界面开始关闭时调用。
-        protected override void OnClose()
-        {
-        }
-
-        // 开始播放关闭动画前调用。
-        protected override void OnStartCloseAnimation()
-        {
-        }
-
-        // 返回关闭动画任务；没有动画时直接返回已完成任务。
-        protected override UniTask OnCloseAnimationAsync()
-        {
-            return UniTask.CompletedTask;
-        }
-
-        // 关闭动画执行完成后调用。
-        protected override void OnEndCloseAnimation()
-        {
-        }
-
-        // Controller 被彻底释放时调用。
         protected override void OnDispose()
         {
+            View.BtnBack.onClick.RemoveListener(Back);
+            View.BtnOpenDetail.onClick.RemoveListener(OpenPopup);
+            View.BtnSkipBack.onClick.RemoveListener(OpenSkipBackPopup);
+        }
+
+        private void Back()
+        {
+            View.TxtStatus.text = "正在返回首页……";
+            UIManager.Instance.Back(LogBackCompleted);
+        }
+
+        private void OpenPopup()
+        {
+            View.TxtStatus.text = "正在打开普通返回弹窗……";
+            UIManager.Instance.Jump(
+                NavigationJumpID.POPUP,
+                onCompleted: OnJumpCompleted);
+        }
+
+        private void OpenSkipBackPopup()
+        {
+            View.TxtStatus.text = "正在打开跨层返回弹窗……";
+            UIManager.Instance.Jump(
+                NavigationJumpID.SKIPBACK,
+                onCompleted: OnJumpCompleted);
+        }
+
+        private void OnJumpCompleted(UIHandle handle, Exception exception)
+        {
+            if (exception != null)
+            {
+                View.TxtStatus.text = $"跳转失败：{exception.Message}";
+                AlloyDebug.Error(exception);
+                return;
+            }
+
+            View.TxtStatus.text = $"已打开 {handle.UIName}。";
+        }
+
+        private static void LogBackCompleted(bool hasReturned, Exception exception)
+        {
+            if (exception != null)
+            {
+                AlloyDebug.Error(exception);
+                return;
+            }
+
+            AlloyDebug.Log($"[NavigationValidation] 返回结果：{hasReturned}");
         }
     }
 }

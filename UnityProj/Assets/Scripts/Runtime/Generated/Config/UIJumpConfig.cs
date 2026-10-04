@@ -21,7 +21,6 @@ public sealed partial class UIJumpConfig : Luban.BeanBase
         JumpMode = (EUIJumpMode)_buf.ReadInt();
         BackMode = (EUIBackMode)_buf.ReadInt();
         BackJumpId = _buf.ReadInt();
-        Remark = _buf.ReadString();
     }
 
     public static UIJumpConfig DeserializeUIJumpConfig(ByteBuf _buf)
@@ -34,7 +33,6 @@ public sealed partial class UIJumpConfig : Luban.BeanBase
     public readonly EUIJumpMode JumpMode;
     public readonly EUIBackMode BackMode;
     public readonly int BackJumpId;
-    public readonly string Remark;
    
     public const int __ID__ = 1005766340;
     public override int GetTypeId() => __ID__;
@@ -51,7 +49,6 @@ public sealed partial class UIJumpConfig : Luban.BeanBase
         + "jumpMode:" + JumpMode + ","
         + "backMode:" + BackMode + ","
         + "backJumpId:" + BackJumpId + ","
-        + "remark:" + Remark + ","
         + "}";
     }
 }

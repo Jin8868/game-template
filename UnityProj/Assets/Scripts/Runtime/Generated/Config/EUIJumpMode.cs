@@ -15,7 +15,6 @@ namespace Game.Config
     {
         Overlay = 0,
         Push = 1,
-        Replace = 2,
     }
 
 } 

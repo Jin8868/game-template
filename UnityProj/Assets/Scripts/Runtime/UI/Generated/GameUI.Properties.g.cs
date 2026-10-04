@@ -6,6 +6,7 @@ namespace Game.UI
 {
     public static partial class GameUI
     {
+
         /// <summary>
         /// LoadingUI 的静态界面定义。
         /// </summary>
@@ -13,10 +14,21 @@ namespace Game.UI
             (UIDefinition<LoadingUIView, LoadingUIController>)m_definitions["LoadingUI"];
 
         /// <summary>
+        /// NavigationDetailUI 的静态界面定义。
+        /// </summary>
+        public static UIDefinition<NavigationDetailUIView, NavigationDetailUIController> NavigationDetailUI =>
+            (UIDefinition<NavigationDetailUIView, NavigationDetailUIController>)m_definitions["NavigationDetailUI"];
+
+        /// <summary>
+        /// NavigationHomeUI 的静态界面定义。
+        /// </summary>
+        public static UIDefinition<NavigationHomeUIView, NavigationHomeUIController> NavigationHomeUI =>
+            (UIDefinition<NavigationHomeUIView, NavigationHomeUIController>)m_definitions["NavigationHomeUI"];
+
+        /// <summary>
         /// NavigationPopupUI 的静态界面定义。
         /// </summary>
         public static UIDefinition<NavigationPopupUIView, NavigationPopupUIController> NavigationPopupUI =>
-            (UIDefinition<NavigationPopupUIView, NavigationPopupUIController>)
-            m_definitions["NavigationPopupUI"];
+            (UIDefinition<NavigationPopupUIView, NavigationPopupUIController>)m_definitions["NavigationPopupUI"];
     }
 }

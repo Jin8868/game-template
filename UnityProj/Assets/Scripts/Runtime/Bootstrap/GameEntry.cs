@@ -14,6 +14,7 @@ namespace Game
     {
         private const string SHUTDOWNSCENENAME = "AlloyFrameworkShutdown";
 
+        private readonly GameStartupPipeline m_startupPipeline = new GameStartupPipeline(); // 业务启动步骤管线。
         private ISceneHandle m_sceneHandle; // 当前加载的游戏场景句柄。
         private UIHandle<LoadingUIController> m_loadingHandle; // 启动加载界面的运行时句柄。
 
@@ -27,28 +28,12 @@ namespace Game
             cancellationToken.ThrowIfCancellationRequested();
             AlloyDebug.Log("Game entry started.");
 
-            // 业务启动步骤统一完成框架扩展安装，入口不直接依赖具体配置适配器。
-            var startupPipeline = new GameStartupPipeline(
-                new ConfigureFrameworkExtensionsStep());
-            await startupPipeline.RunAsync(cancellationToken);
+            ///// 先完成业务对框架能力的安装与校验,业务层不能删除！/////
+            await m_startupPipeline.RunAsync(cancellationToken);
+            ///// 先完成业务对框架能力的安装与校验,业务层不能删除！/////
 
-            // 打开启动加载界面后再开始场景加载，避免启动过程缺少反馈。
-            m_loadingHandle = await UIManager.Instance.OpenAsync(
-                GameUI.LoadingUI, cancellationToken);
-            await UniTask.NextFrame(cancellationToken);
-            FrameworkBootstrap.DestroyStartupScreen();
-
-            // 加载首个业务场景并将进度反馈给启动界面。
-            m_sceneHandle = await ResourceManager.Instance.LoadSceneAsync(
-                "Scenes/SampleScene",
-                LoadCallBack,
-                cancellationToken: cancellationToken);
-
-            // 场景加载完成后关闭启动界面，并通过配置 ID 进入导航验证首页。
-            await CloseLoadingAsync();
-            await UIManager.Instance.JumpAsync(
-                NavigationJumpID.HOME,
-                cancellationToken: cancellationToken);
+            // 以下是业务层入口，调用业务层逻辑
+            await StartInitialGameAsync(cancellationToken);
         }
 
         /// <summary>
@@ -80,6 +65,41 @@ namespace Game
             {
                 await loadingHandle.CloseAsync();
             }
+        }
+
+        private async UniTask StartInitialGameAsync(CancellationToken cancellationToken)
+        {
+            await OpenStartupLoadingAsync(cancellationToken);
+            await LoadInitialSceneAsync(cancellationToken);
+            await EnterInitialUIAsync(cancellationToken);
+        }
+
+        private async UniTask OpenStartupLoadingAsync(CancellationToken cancellationToken)
+        {
+            // 打开加载界面后再移除框架启动屏，保证场景加载过程始终有反馈。
+            m_loadingHandle = await UIManager.Instance.OpenAsync(
+                GameUI.LoadingUI,
+                cancellationToken);
+            await UniTask.NextFrame(cancellationToken);
+            FrameworkBootstrap.DestroyStartupScreen();
+        }
+
+        private async UniTask LoadInitialSceneAsync(CancellationToken cancellationToken)
+        {
+            // 首个业务场景的加载进度由加载界面显示。
+            m_sceneHandle = await ResourceManager.Instance.LoadSceneAsync(
+                "Scenes/SampleScene",
+                LoadCallBack,
+                cancellationToken: cancellationToken);
+        }
+
+        private async UniTask EnterInitialUIAsync(CancellationToken cancellationToken)
+        {
+            // 场景加载完成后关闭启动界面，并通过配置 ID 进入业务首屏。
+            await CloseLoadingAsync();
+            await UIManager.Instance.JumpAsync(
+                NavigationJumpID.HOME,
+                cancellationToken: cancellationToken);
         }
 
         private static void EnsureSceneCanUnload(ISceneHandle sceneHandle)

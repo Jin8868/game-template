@@ -11,6 +11,14 @@ namespace Game
         private bool m_hasRun; // 管线是否已经执行过。
 
         /// <summary>
+        /// 创建包含默认框架扩展安装的业务启动管线。
+        /// </summary>
+        internal GameStartupPipeline()
+            : this(new ConfigureFrameworkExtensionsStep())
+        {
+        }
+
+        /// <summary>
         /// 创建按声明顺序执行的业务启动管线。
         /// </summary>
         /// <param name="steps">需要依次执行的启动步骤。</param>

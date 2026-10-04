@@ -1,6 +1,9 @@
 # Local framework checkout (managed by setup scripts)
 /AlloyFramework/
 
+# Project-local Luban CLI binaries. Keep Generate.ps1 and VERSION tracked.
+/Tools/Luban/Luban/
+
 # Unity generated directories
 /UnityProj/[Ll]ibrary/
 /UnityProj/[Tt]emp/
@@ -46,3 +49,5 @@ Thumbs.db
 
 # Unity crash reports
 sysinfo.txt
+
+/DesignData/Luban/Defines/GeneratedEnums.xml

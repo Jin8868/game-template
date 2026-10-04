@@ -3,13 +3,14 @@
   "rootNamespace": "Game",
   "references": [
     "Alloy.Runtime",
+    "Luban.Runtime",
     "UniTask",
     "Unity.TextMeshPro",
     "Unity.ugui"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],
-  "allowUnsafeCode": false,
+  "allowUnsafeCode": true,
   "overrideReferences": false,
   "precompiledReferences": [],
   "autoReferenced": true,

@@ -50,4 +50,6 @@ Thumbs.db
 # Unity crash reports
 sysinfo.txt
 
+
+# Generated Luban enum schema. Enums.xlsx is the source of truth.
 /DesignData/Luban/Defines/GeneratedEnums.xml

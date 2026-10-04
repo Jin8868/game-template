@@ -13,11 +13,53 @@ MonoBehaviour:
   m_Name: UIAuthoringSettings
   m_EditorClassIdentifier: 
   m_items:
+  - m_prefabGuid: 669313ffbd01a0f4ea75bd367f35018e
+    m_uiName: NavigationHomeUI
+    m_scriptNamespace: Game.UI
+    m_viewFolder: Assets/Scripts/Runtime/UI/Views/NavigationUI
+    m_controllerFolder: Assets/Scripts/Runtime/UI/Controllers/NavigationUI
+    m_hasGenerated: 0
+    m_layer: 100
+    m_layout: 1
+    m_background: 0
+    m_input: 1
+    m_cache: 0
+    m_openMode: 0
+    m_navigation: 0
+    m_pauseCovered: 0
+  - m_prefabGuid: e75c7e34d50f7804690b866f35eea9db
+    m_uiName: NavigationPopupUI
+    m_scriptNamespace: Game.UI
+    m_viewFolder: Assets/Scripts/Runtime/UI/Views
+    m_controllerFolder: Assets/Scripts/Runtime/UI/Controllers
+    m_hasGenerated: 0
+    m_layer: 200
+    m_layout: 1
+    m_background: 0
+    m_input: 1
+    m_cache: 0
+    m_openMode: 0
+    m_navigation: 0
+    m_pauseCovered: 0
   - m_prefabGuid: f0b602c1fb38b55448bfb406139bc69f
     m_uiName: LoadingUI
     m_scriptNamespace: Game.UI
     m_viewFolder: Assets/Scripts/Runtime/UI/Views/LoadingUI
     m_controllerFolder: Assets/Scripts/Runtime/UI/Controllers/LoadingUI
+    m_hasGenerated: 1
+    m_layer: 100
+    m_layout: 1
+    m_background: 0
+    m_input: 1
+    m_cache: 0
+    m_openMode: 0
+    m_navigation: 0
+    m_pauseCovered: 0
+  - m_prefabGuid: 0b5bd459771f1144c99ad91ecd604c29
+    m_uiName: NavigationDetailUI
+    m_scriptNamespace: Game.UI
+    m_viewFolder: Assets/Scripts/Runtime/UI/Views/NavigationUI
+    m_controllerFolder: Assets/Scripts/Runtime/UI/Controllers/NavigationUI
     m_hasGenerated: 1
     m_layer: 100
     m_layout: 1

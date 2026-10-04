@@ -11,7 +11,7 @@ namespace Game
         public string Name => "配置框架业务扩展";
 
         /// <summary>
-        /// 安装业务 UI 定义提供器和 Luban 导航配置适配器。
+        /// 安装业务 UI 定义字典和 Luban 导航配置适配器。
         /// </summary>
         /// <param name="cancellationToken">用于取消启动流程的令牌。</param>
         /// <returns>表示扩展安装过程的任务。</returns>
@@ -19,7 +19,7 @@ namespace Game
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // UI 定义按名称延迟创建，导航配置则在启动阶段一次性完成静态校验。
+            // 先安装启动时构建的 UI 定义字典，再一次性校验全部导航配置引用。
             UIManager.Instance.SetDefinitionProvider(GameUI.DefinitionProvider);
             UIManager.Instance.ConfigureNavigation(
                 new LubanUIJumpConfigProvider(GameConfig.StartupTables.UIJumpConfigTable));

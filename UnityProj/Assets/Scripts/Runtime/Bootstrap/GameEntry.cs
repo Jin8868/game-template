@@ -2,7 +2,6 @@ using System.Threading;
 using AlloyFramework;
 using AlloyFramework.UI;
 using Cysharp.Threading.Tasks;
-using Game.Config;
 using Game.UI;
 using UnityEngine;
 using UnityEngine.Scripting;
@@ -25,13 +24,17 @@ namespace Game
             cancellationToken.ThrowIfCancellationRequested();
             AlloyDebug.Log("Game entry started.");
 
+            // 业务启动步骤统一完成框架扩展安装，入口不直接依赖具体配置适配器。
+            var startupPipeline = new GameStartupPipeline(
+                new ConfigureFrameworkExtensionsStep());
+            await startupPipeline.RunAsync(cancellationToken);
+
             // 打开启动加载界面后再开始场景加载，避免启动过程缺少反馈。
             m_loadingHandle = await UIManager.Instance.OpenAsync(
                 GameUI.LoadingUI, cancellationToken);
             await UniTask.NextFrame(cancellationToken);
             FrameworkBootstrap.DestroyStartupScreen();
-            var configData = AlloyConfig.Instance.Get<UIJumpConfig>(10001);
-            AlloyDebug.Log(configData.BackJumpId);
+
             // 加载首个业务场景并将进度反馈给启动界面。
             m_sceneHandle = await ResourceManager.Instance.LoadSceneAsync(
                 "Scenes/SampleScene",

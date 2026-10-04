@@ -56,8 +56,6 @@ namespace Game.UI
                     return FrameworkJumpMode.Overlay;
                 case LubanJumpMode.Push:
                     return FrameworkJumpMode.Push;
-                case LubanJumpMode.Replace:
-                    return FrameworkJumpMode.Replace;
                 default:
                     throw new System.ArgumentOutOfRangeException(nameof(jumpMode), jumpMode, null);
             }

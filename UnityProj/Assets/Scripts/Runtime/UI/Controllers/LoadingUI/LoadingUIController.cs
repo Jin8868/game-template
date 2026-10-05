@@ -72,7 +72,7 @@ namespace Game.UI
         }
 
         // 返回关闭动画任务；没有动画时直接返回已完成任务。
-        protected override UniTask OnCloseAnimationAsync()
+        protected override UniTask OnCloseAnimationAsync(CancellationToken cancellationToken)
         {
             return UniTask.CompletedTask;
         }

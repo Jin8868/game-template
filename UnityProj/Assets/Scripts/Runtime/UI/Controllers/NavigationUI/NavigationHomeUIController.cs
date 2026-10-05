@@ -10,6 +10,7 @@ namespace Game.UI
         {
             View.BtnOpenDetail.onClick.AddListener(OpenDetail);
             View.BtnOpenPopup.onClick.AddListener(OpenPopup);
+            View.AnimationEventReceived += OnAnimationEventReceived;
         }
 
         protected override void OnInitData(UIEmptyData data)
@@ -36,6 +37,7 @@ namespace Game.UI
         {
             View.BtnOpenDetail.onClick.RemoveListener(OpenDetail);
             View.BtnOpenPopup.onClick.RemoveListener(OpenPopup);
+            View.AnimationEventReceived -= OnAnimationEventReceived;
         }
 
         private void OpenDetail()
@@ -64,6 +66,11 @@ namespace Game.UI
             }
 
             View.TxtStatus.text = $"已打开 {handle.UIName}。";
+        }
+
+        private void OnAnimationEventReceived(UIAnimationEventContext context)
+        {
+            View.TxtStatus.text = $"收到动效事件：{context.AnimationKey}/{context.EventKey}。";
         }
     }
 }

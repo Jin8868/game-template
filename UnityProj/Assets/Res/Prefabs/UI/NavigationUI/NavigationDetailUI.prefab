@@ -302,7 +302,7 @@ RectTransform:
   - {fileID: 2630313507929340462}
   m_Father: {fileID: 642710195140861269}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.034188036, y: 0}
+  m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
@@ -327,11 +327,11 @@ MonoBehaviour:
   m_restoreLayoutOnDisable: 1
   m_currentSafeArea:
     serializedVersion: 2
-    x: 80
+    x: 0
     y: 0
-    width: 2260
+    width: 1920
     height: 1080
-  m_currentAnchorMin: {x: 0.034188036, y: 0}
+  m_currentAnchorMin: {x: 0, y: 0}
   m_currentAnchorMax: {x: 1, y: 1}
 --- !u!1 &4411509094239540214
 GameObject:

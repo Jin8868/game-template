@@ -1040,6 +1040,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28952e8865001fc45b8cdf40427bc9ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_orientationMode: 2
+  m_landscapeReferenceResolution: {x: 1920, y: 1080}
+  m_landscapeMatchWidthOrHeight: 0
+  m_portraitReferenceResolution: {x: 1080, y: 1920}
+  m_portraitMatchWidthOrHeight: 1
 --- !u!1 &7353635805389281060
 GameObject:
   m_ObjectHideFlags: 0

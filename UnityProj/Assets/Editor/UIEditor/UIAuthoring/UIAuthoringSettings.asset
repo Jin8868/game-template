@@ -63,7 +63,7 @@ MonoBehaviour:
     m_hasGenerated: 1
     m_layer: 100
     m_layout: 1
-    m_background: 0
+    m_background: 2
     m_input: 1
     m_cache: 0
     m_openMode: 0

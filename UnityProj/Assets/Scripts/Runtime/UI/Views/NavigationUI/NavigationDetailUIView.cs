@@ -26,5 +26,12 @@ namespace Game.UI
 
         public UnityEngine.UI.Text TxtStatus => m_txtStatus;
         // </alloy-generated-bindings>
+
+        // <alloy-generated-animation-keys>
+        // 此区块由 AlloyFramework UI 生成器维护，请勿手动修改。
+        public static class AnimationKeys
+        {
+        }
+        // </alloy-generated-animation-keys>
     }
 }

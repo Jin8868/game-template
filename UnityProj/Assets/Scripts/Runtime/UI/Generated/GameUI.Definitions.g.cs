@@ -46,7 +46,7 @@ namespace Game.UI
                     .Location("Prefabs/UI/NavigationUI/NavigationDetailUI")
                     .Layer(UILayer.WINDOW)
                     .Layout(UILayoutMode.Window)
-                    .Background(UIBackgroundMode.None)
+                    .Background(UIBackgroundMode.Blur)
                     .Input(UIInputMode.Block)
                     .Cache(UICacheMode.DestroyOnClose)
                     .OpenMode(UIOpenMode.SingleRefresh)

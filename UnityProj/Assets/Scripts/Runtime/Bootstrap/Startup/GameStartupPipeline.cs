@@ -11,10 +11,10 @@ namespace Game
         private bool m_hasRun; // 管线是否已经执行过。
 
         /// <summary>
-        /// 创建包含默认框架扩展安装的业务启动管线。
+        /// 创建包含业务 Model 注册和默认框架扩展安装的业务启动管线。
         /// </summary>
         internal GameStartupPipeline()
-            : this(new ConfigureFrameworkExtensionsStep())
+            : this(new RegisterGameModelsStep(), new ConfigureFrameworkExtensionsStep())
         {
         }
 

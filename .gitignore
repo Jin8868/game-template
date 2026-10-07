@@ -53,3 +53,36 @@ sysinfo.txt
 
 # Generated Luban enum schema. Enums.xlsx is the source of truth.
 /DesignData/Luban/Defines/GeneratedEnums.xml
+
+# Wwise generated SoundBanks (regenerate with UnityProj/Tools/Wwise/GenerateSoundBanks.ps1)
+/WwiseProj/**/GeneratedSoundBanks/
+/UnityProj/Assets/StreamingAssets/Audio/GeneratedSoundBanks/
+/UnityProj/Assets/StreamingAssets/Audio/GeneratedSoundBanks.meta
+/UnityProj/Assets/StreamingAssets/Audio.meta
+
+# Wwise authoring caches, backups and per-user settings
+/WwiseProj/**/.cache*/
+/WwiseProj/**/.backup*/
+/WwiseProj/**/*.wsettings
+/WwiseProj/**/*.validationcache
+/WwiseProj/**/*.akd
+/WwiseProj/**/*.prof
+/WwiseProj/**/SoundBankInfoCache.dat
+/WwiseProj/**/IncrementalSoundBankData.xml
+
+# Wwise Unity local database and generated plug-in headers
+/UnityProj/Assets/Wwise/Editor/ProjectData/
+/UnityProj/Assets/Wwise/Editor/ProjectData.meta
+/UnityProj/Assets/Wwise/**/AkWwiseProjectData.asset
+/UnityProj/Assets/Wwise/**/AkWwiseProjectData.asset.meta
+/UnityProj/Assets/Wwise/**/AkWwiseProjectData.asset.*
+/UnityProj/Assets/Wwise/**/IncrementalSoundBankData.xml
+/UnityProj/Assets/Wwise/**/IncrementalSoundBankData.xml.meta
+
+# Wwise installer archives, setup logs, offline documentation and debug symbol metadata
+/UnityProj/WwiseUnityIntegration_*_Src.zip
+/UnityProj/logRunSetup.txt
+/UnityProj/Assets/Wwise/Documentation/
+/UnityProj/Assets/Wwise/Documentation.meta
+/UnityProj/Assets/Wwise/**/*.pdb.meta
+/UnityProj/Assets/Wwise/**/*.mdb.meta

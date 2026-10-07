@@ -3,7 +3,8 @@
   "rootNamespace": "Game",
   "references": [
     "Alloy.Runtime",
-    "UniTask"
+    "UniTask",
+    "Alloy.Audio.Wwise"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

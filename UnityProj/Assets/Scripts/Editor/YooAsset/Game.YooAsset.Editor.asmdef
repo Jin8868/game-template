@@ -2,7 +2,9 @@
   "name": "Game.YooAsset.Editor",
   "rootNamespace": "Game.Editor",
   "references": [
-    "YooAsset.Editor"
+    "YooAsset.Editor",
+    "YooAsset",
+    "Alloy.Runtime"
   ],
   "includePlatforms": [
     "Editor"

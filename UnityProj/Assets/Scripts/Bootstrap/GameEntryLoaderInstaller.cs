@@ -1,4 +1,5 @@
 using AlloyFramework;
+using AlloyFramework.Audio;
 using UnityEngine;
 
 namespace Game
@@ -9,6 +10,7 @@ namespace Game
         private static void Install()
         {
             FrameworkBootstrap.SetGameEntryLoader(new DefaultGameEntryLoader());
+            AudioManager.Instance.SetInstaller(GameAudioInstaller.InstallAsync);
         }
     }
 }

@@ -168,3 +168,38 @@ MonoBehaviour:
         FilterRuleName: CollectAll
         AssetTags: 
         UserData: 
+    - GroupName: audioSettings
+      GroupDesc: Wwise initialization settings
+      AssetTags: ''
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Wwise/ScriptableObjects/AkWwiseInitializationSettings.asset
+        CollectorGUID: 26c7ef5c1922a194eaeccb35ae68f3e8
+        CollectorType: 0
+        AddressRuleName: AddressWwiseInitializationSettings
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: ''
+        UserData: ''
+  - PackageName: AudioPackage
+    PackageDesc: Wwise raw audio content
+    EnableAddressable: 1
+    SupportExtensionless: 1
+    LocationToLower: 0
+    IncludeAssetGUID: 0
+    AutoCollectShaders: 0
+    IgnoreRuleName: RawFileIgnoreRule
+    Groups:
+    - GroupName: wwiseAudio
+      GroupDesc: Manifest and referenced platform banks and media
+      AssetTags: ''
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/WwiseAudio
+        CollectorGUID: ''
+        CollectorType: 0
+        AddressRuleName: AddressWwiseAudio
+        PackRuleName: PackRawFile
+        FilterRuleName: CollectWwiseAudio
+        AssetTags: ''
+        UserData: ''

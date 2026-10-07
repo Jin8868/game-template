@@ -1,5 +1,6 @@
 using System.Threading;
 using AlloyFramework;
+using AlloyFramework.Audio;
 using AlloyFramework.UI;
 using Cysharp.Threading.Tasks;
 using Game.UI;
@@ -44,6 +45,10 @@ namespace Game
         {
             // 先关闭启动界面，避免卸载场景后残留 UI。
             await CloseLoadingAsync();
+
+            // 原生音频退出后才允许框架资源系统关闭。
+            m_startupPipeline.Shutdown();
+            await AudioManager.Instance.ShutdownAsync();
 
             // 释放首个业务场景的资源句柄。
             var sceneHandle = m_sceneHandle;

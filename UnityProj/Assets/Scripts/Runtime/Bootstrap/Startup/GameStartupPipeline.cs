@@ -14,7 +14,8 @@ namespace Game
         /// 创建包含业务 Model 注册和默认框架扩展安装的业务启动管线。
         /// </summary>
         internal GameStartupPipeline()
-            : this(new RegisterGameModelsStep(), new ConfigureFrameworkExtensionsStep())
+            : this(new RegisterGameModelsStep(), new ConfigureFrameworkExtensionsStep(),
+                new InitializeAudioStep())
         {
         }
 
@@ -51,6 +52,13 @@ namespace Game
                 var elapsed = DateTime.UtcNow - startedAt;
                 AlloyDebug.Log($"[GameStartup] 完成：{step.Name}，耗时 {elapsed.TotalMilliseconds:F1} ms");
             }
+        }
+
+        internal void Shutdown()
+        {
+            // 倒序释放启动步骤持有的长期租约。
+            for (int index = m_steps.Length - 1; index >= 0; index--)
+            { if (m_steps[index] is IDisposable disposable) { disposable.Dispose(); } }
         }
     }
 }

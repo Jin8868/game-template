@@ -1,6 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <WwiseDocument Type="WorkUnit" ID="{CC68799A-AC03-4986-B809-19492930435E}" SchemaVersion="133">
 	<Containers>
-		<WorkUnit Name="Default Work Unit" ID="{CC68799A-AC03-4986-B809-19492930435E}" PersistMode="Standalone"/>
+		<WorkUnit Name="Default Work Unit" ID="{CC68799A-AC03-4986-B809-19492930435E}" PersistMode="Standalone">
+			<ChildrenList>
+				<Sound Name="ButtonClick" ID="{1BED18BA-996A-42C1-AFE3-566C0B14E0CC}" ShortID="339957141">
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{084ADA61-9F04-46AC-A794-60A83DDCA2A2}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{77489B22-B793-49AF-8FFB-4D6BBF02C1ED}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="AlloyButtonClick" ID="{43A8132C-2534-4034-A939-B359706578F4}">
+							<Language>SFX</Language>
+							<AudioFile>AlloyButtonClick.wav</AudioFile>
+							<MediaIDList>
+								<MediaID ID="133108369"/>
+							</MediaIDList>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="AlloyButtonClick" ID="{43A8132C-2534-4034-A939-B359706578F4}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+			</ChildrenList>
+		</WorkUnit>
 	</Containers>
 </WwiseDocument>

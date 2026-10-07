@@ -1,13 +1,17 @@
 using System;
 using AlloyFramework;
+using AlloyFramework.Audio;
 using AlloyFramework.UI;
 
 namespace Game.UI
 {
     public sealed class NavigationHomeUIController : UIController<NavigationHomeUIView>
     {
+        private AudioScope m_audioScope; // 本界面音频的生命周期。
+
         protected override void OnCreate()
         {
+            m_audioScope = AudioManager.Instance.CreateScope("NavigationHomeUI");
             View.BtnOpenDetail.onClick.AddListener(OpenDetail);
             View.BtnOpenPopup.onClick.AddListener(OpenPopup);
             View.AnimationEventReceived += OnAnimationEventReceived;
@@ -35,6 +39,8 @@ namespace Game.UI
 
         protected override void OnDispose()
         {
+            m_audioScope?.Dispose();
+            m_audioScope = null;
             View.BtnOpenDetail.onClick.RemoveListener(OpenDetail);
             View.BtnOpenPopup.onClick.RemoveListener(OpenPopup);
             View.AnimationEventReceived -= OnAnimationEventReceived;
@@ -42,6 +48,7 @@ namespace Game.UI
 
         private void OpenDetail()
         {
+            PlayButtonClick();
             View.TxtStatus.text = "正在以 Push 模式打开详情页……";
             UIManager.Instance.Jump(
                 NavigationJumpID.DETAIL,
@@ -50,6 +57,7 @@ namespace Game.UI
 
         private void OpenPopup()
         {
+            PlayButtonClick();
             View.TxtStatus.text = "正在以 Overlay 模式打开弹窗……";
             UIManager.Instance.Jump(
                 NavigationJumpID.POPUP,
@@ -66,6 +74,12 @@ namespace Game.UI
             }
 
             View.TxtStatus.text = $"已打开 {handle.UIName}。";
+        }
+
+        private void PlayButtonClick()
+        {
+            // 业务只提供事件名称和归属，不管理 Bank、媒体或监听器。
+            AudioManager.Instance.PlayAudio("Play_ButtonClick", new AudioPlayOptions { Scope = m_audioScope });
         }
 
         private void OnAnimationEventReceived(UIAnimationEventContext context)

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <WwiseDocument Type="Project" SchemaVersion="133" WwiseVersion="v2025.1.11" WwiseBuild="9262">
 	<ProjectInfo>
 		<Project Name="WwiseAudio" ID="{CA234063-1A4C-4702-8D74-1870CE1FA2EE}">
@@ -30,12 +30,12 @@
 				</Property>
 				<Property Name="SoundBankPostGenerateCustomCmdDescription" Type="string">
 					<ValueList>
-						<Value Platform="Windows"></Value>
+						<Value Platform="Windows">Export AlloyFramework audio content</Value>
 					</ValueList>
 				</Property>
 				<Property Name="SoundBankPostGenerateCustomCmdLines" Type="string">
 					<ValueList>
-						<Value Platform="Windows"></Value>
+						<Value Platform="Windows">powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(WwiseProjectPath)\..\..\UnityProj\Tools\Wwise\ExportAudioContent.ps1&quot; -Platform &quot;$(Platform)&quot;</Value>
 					</ValueList>
 				</Property>
 				<Property Name="SoundBankPreGenerateCustomCmdDescription" Type="string">

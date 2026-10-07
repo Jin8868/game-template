@@ -2,16 +2,21 @@
 
 项目使用 Wwise **2025.1.11.9262**，Unity Integration **2025.1.11.4331**。
 
-首次克隆项目、清理生成目录或修改音频后，在 UnityProj 目录执行：
+Windows 平台已配置 Wwise 的 Post-Generation Step。重新加载 Wwise 工程后，
+点击 `Generate Checked` 或 `Generate All`，生成结束会自动调用项目 `ExportAudioContent.ps1`，
+导出框架清单与原始文件收集源，不需要另开 PowerShell。
+在生成日志中确认“框架音频清单已导出”和“RawFile 收集目录”；出现导出错误时先修复错误。
+EditorSimulate 退出再进入运行即可；Offline/Host 仍需通过 Unity 菜单重新构建 AudioPackage。
+
+首次克隆项目、清理生成目录或修改音频后，打开 Wwise 工程执行生成，生成后步骤会自动导出。
+项目已删除手动生成脚本入口，保留 `ExportAudioContent.ps1` 与 `ResolveFrameworkTools.ps1`。
+已有生成结果时，也可在 UnityProj 目录单独重新导出：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\Tools\Wwise\GenerateSoundBanks.ps1
+powershell -ExecutionPolicy Bypass -File .\Tools\Wwise\ExportAudioContent.ps1 -Platform Windows
 ```
 
-其他机器安装目录不同，可使用 `-WwiseInstallationPath 'D:\Audiokinetic\Wwise_2025.1.11.9262'`，
-或设置 `WWISE_INSTALLATION_PATH` 环境变量。
-
-脚本读取 `Assets/WwiseSettings.xml`，生成 Windows SoundBank，再执行 `ExportAudioContent.ps1`，
+导出工具读取 `Assets/WwiseSettings.xml` 中的输出路径，
 导出依赖清单与 `Assets/Res/WwiseAudio/Windows` 原始文件收集源。
 框架接管后不再由此脚本复制到官方 StreamingAssets 目录。
 Wwise 工程的 Root Output Path 保持 `GeneratedSoundBanks/`。

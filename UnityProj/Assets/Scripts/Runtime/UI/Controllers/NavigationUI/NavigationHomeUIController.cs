@@ -79,7 +79,8 @@ namespace Game.UI
         private void PlayButtonClick()
         {
             // 业务只提供事件名称和归属，不管理 Bank、媒体或监听器。
-            AudioManager.Instance.PlayAudio("Play_ButtonClick", new AudioPlayOptions { Scope = m_audioScope });
+            AudioManager.Instance.PlayAudio("Play_ButtonClick",
+                new AudioPlayOptions { Scope = m_audioScope,Volume = View.Volume});
         }
 
         private void OnAnimationEventReceived(UIAnimationEventContext context)

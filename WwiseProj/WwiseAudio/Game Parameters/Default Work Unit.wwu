@@ -1,6 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <WwiseDocument Type="WorkUnit" ID="{28769BDC-E867-4565-AA90-82DD8C920DB8}" SchemaVersion="133">
 	<GameParameters>
-		<WorkUnit Name="Default Work Unit" ID="{28769BDC-E867-4565-AA90-82DD8C920DB8}" PersistMode="Standalone"/>
+		<WorkUnit Name="Default Work Unit" ID="{28769BDC-E867-4565-AA90-82DD8C920DB8}" PersistMode="Standalone">
+			<ChildrenList>
+				<GameParameter Name="AlloyMasterVolume" ID="{9534C111-FA7F-4398-B18B-26035EEB0819}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0" />
+						<Property Name="Min" Type="Real64" Value="-200" />
+						<Property Name="Max" Type="Real64" Value="0" />
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="AlloyBGMVolume" ID="{984FE3D2-9851-4E70-AA7D-957487FEB7E7}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0" />
+						<Property Name="Min" Type="Real64" Value="-200" />
+						<Property Name="Max" Type="Real64" Value="0" />
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="AlloySFXVolume" ID="{E2EDFC77-7D93-427E-9CFB-FB426FB1B5CA}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0" />
+						<Property Name="Min" Type="Real64" Value="-200" />
+						<Property Name="Max" Type="Real64" Value="0" />
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="AlloyInstanceVolume" ID="{9FD3668B-1E48-46D8-B3FB-ED2628742012}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0" />
+						<Property Name="Min" Type="Real64" Value="-200" />
+						<Property Name="Max" Type="Real64" Value="0" />
+					</PropertyList>
+				</GameParameter>
+			</ChildrenList>
+		</WorkUnit>
 	</GameParameters>
 </WwiseDocument>

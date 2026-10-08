@@ -21,5 +21,7 @@ namespace Game.UI
 
         public UnityEngine.UI.Text TxtStatus => m_txtStatus;
         // </alloy-generated-bindings>
+
+        public float Volume;
     }
 }

@@ -3,28 +3,116 @@
 	<Containers>
 		<WorkUnit Name="Default Work Unit" ID="{CC68799A-AC03-4986-B809-19492930435E}" PersistMode="Standalone">
 			<ChildrenList>
-				<Sound Name="ButtonClick" ID="{1BED18BA-996A-42C1-AFE3-566C0B14E0CC}" ShortID="339957141">
+				<PropertyContainer Name="AlloyBGM" ID="{A6EC0F2F-8D23-45CD-BC6F-B5BA3538FB95}">
 					<ReferenceList>
-						<Reference Name="Conversion">
-							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{084ADA61-9F04-46AC-A794-60A83DDCA2A2}"/>
-						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{77489B22-B793-49AF-8FFB-4D6BBF02C1ED}"/>
+							<ObjectRef Name="BGM" ID="{883486BD-82C6-4116-9B9F-C6C5BC7FDC76}" WorkUnitID="{77489B22-B793-49AF-8FFB-4D6BBF02C1ED}" />
+						</Reference>
+					</ReferenceList>
+					<ObjectLists>
+						<ObjectList Name="RTPC">
+							<RTPC Name="" ID="{10E34579-316F-4AAB-9226-F05E9A502B10}">
+								<PropertyList>
+									<Property Name="PropertyName" Type="string" Value="Volume" />
+								</PropertyList>
+								<ReferenceList>
+									<Reference Name="ControlInput">
+										<ObjectRef Name="AlloyInstanceVolume" ID="{9FD3668B-1E48-46D8-B3FB-ED2628742012}" WorkUnitID="{28769BDC-E867-4565-AA90-82DD8C920DB8}" />
+									</Reference>
+									<Reference Name="Curve">
+										<Custom>
+											<Curve Name="" ID="{A46596EB-4601-4A49-8D64-116C6BB41AD2}">
+												<PropertyList>
+													<Property Name="Flags" Type="int32" Value="1" />
+												</PropertyList>
+												<PointList>
+													<Point>
+														<XPos>-200</XPos>
+														<YPos>-200</YPos>
+														<Flags>5</Flags>
+														<SegmentShape>Linear</SegmentShape>
+													</Point>
+													<Point>
+														<XPos>0</XPos>
+														<YPos>0</YPos>
+														<Flags>37</Flags>
+													</Point>
+												</PointList>
+											</Curve>
+										</Custom>
+									</Reference>
+								</ReferenceList>
+							</RTPC>
+						</ObjectList>
+					</ObjectLists>
+				</PropertyContainer>
+				<PropertyContainer Name="AlloySFX" ID="{DF82A529-FD08-4746-BC64-9B96F941CC3D}">
+					<ReferenceList>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="SFX" ID="{C65A8005-C67E-4FF6-B931-3CD61E1D6330}" WorkUnitID="{77489B22-B793-49AF-8FFB-4D6BBF02C1ED}" />
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
-						<AudioFileSource Name="AlloyButtonClick" ID="{43A8132C-2534-4034-A939-B359706578F4}">
-							<Language>SFX</Language>
-							<AudioFile>AlloyButtonClick.wav</AudioFile>
-							<MediaIDList>
-								<MediaID ID="133108369"/>
-							</MediaIDList>
-						</AudioFileSource>
+						<Sound Name="ButtonClick" ID="{1BED18BA-996A-42C1-AFE3-566C0B14E0CC}" ShortID="339957141">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{084ADA61-9F04-46AC-A794-60A83DDCA2A2}" />
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="SFX" ID="{C65A8005-C67E-4FF6-B931-3CD61E1D6330}" WorkUnitID="{77489B22-B793-49AF-8FFB-4D6BBF02C1ED}" />
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="AlloyButtonClick" ID="{43A8132C-2534-4034-A939-B359706578F4}">
+									<Language>SFX</Language>
+									<AudioFile>AlloyButtonClick.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="133108369" />
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="AlloyButtonClick" ID="{43A8132C-2534-4034-A939-B359706578F4}" Platform="Linked" />
+							</ActiveSourceList>
+						</Sound>
 					</ChildrenList>
-					<ActiveSourceList>
-						<ActiveSource Name="AlloyButtonClick" ID="{43A8132C-2534-4034-A939-B359706578F4}" Platform="Linked"/>
-					</ActiveSourceList>
-				</Sound>
+					<ObjectLists>
+						<ObjectList Name="RTPC">
+							<RTPC Name="" ID="{F4362A6E-211F-423D-89E1-9EA927F99A54}">
+								<PropertyList>
+									<Property Name="PropertyName" Type="string" Value="Volume" />
+								</PropertyList>
+								<ReferenceList>
+									<Reference Name="ControlInput">
+										<ObjectRef Name="AlloyInstanceVolume" ID="{9FD3668B-1E48-46D8-B3FB-ED2628742012}" WorkUnitID="{28769BDC-E867-4565-AA90-82DD8C920DB8}" />
+									</Reference>
+									<Reference Name="Curve">
+										<Custom>
+											<Curve Name="" ID="{55B3C2F5-D9C5-4147-A8AB-8E9AE224A6D8}">
+												<PropertyList>
+													<Property Name="Flags" Type="int32" Value="1" />
+												</PropertyList>
+												<PointList>
+													<Point>
+														<XPos>-200</XPos>
+														<YPos>-200</YPos>
+														<Flags>5</Flags>
+														<SegmentShape>Linear</SegmentShape>
+													</Point>
+													<Point>
+														<XPos>0</XPos>
+														<YPos>0</YPos>
+														<Flags>37</Flags>
+													</Point>
+												</PointList>
+											</Curve>
+										</Custom>
+									</Reference>
+								</ReferenceList>
+							</RTPC>
+						</ObjectList>
+					</ObjectLists>
+				</PropertyContainer>
 			</ChildrenList>
 		</WorkUnit>
 	</Containers>

@@ -4,6 +4,8 @@
 		<Project Name="WwiseAudio" ID="{CA234063-1A4C-4702-8D74-1870CE1FA2EE}">
 			<Platforms>
 				<Platform Name="Windows" ReferencePlatform="Windows" ID="{5D49B584-E988-4B93-95F3-4A333855EE18}" />
+				<Platform Name="Android" ReferencePlatform="Android" ID="{FAFB3DB9-09B2-42CD-82C9-E66EEF3E86D9}" />
+				<Platform Name="iOS" ReferencePlatform="iOS" ID="{7C2B5612-E946-47E2-BAEC-02ABF6C8B240}" />
 			</Platforms>
 			<LanguageList>
 				<Language Name="English(US)" ID="{FEECCCB4-0228-4A25-8D57-6C950D9126C8}" />
@@ -20,22 +22,30 @@
 				<Property Name="ExternalSourcesOutputPath" Type="string">
 					<ValueList>
 						<Value Platform="Windows">GeneratedSoundBanks\Windows\</Value>
+						<Value Platform="Android">GeneratedSoundBanks\Android\</Value>
+						<Value Platform="iOS">GeneratedSoundBanks\iOS\</Value>
 					</ValueList>
 				</Property>
 				<Property Name="SoundBankGenerateEstimatedDuration" Type="bool" Value="True" /><Property Name="GenerateSoundBankXML" Type="bool" Value="False" /><Property Name="SoundBankGenerateHeaderFile" Type="bool" Value="True" /><Property Name="SoundBankGenerateMaxAttenuationInfo" Type="bool" Value="True" /><Property Name="GenerateSoundBankJSON" Type="bool" Value="True" /><Property Name="SoundBankGeneratePrintGUID" Type="bool" Value="True" /><Property Name="SoundBankGeneratePrintPath" Type="bool" Value="True" /><Property Name="AutoSoundBankEnabled" Type="bool" Value="True" /><Property Name="SoundBankHeaderFilePath" Type="string" Value="GeneratedSoundBanks/" />
 				<Property Name="SoundBankPaths" Type="string">
 					<ValueList>
 						<Value Platform="Windows">GeneratedSoundBanks\Windows\</Value>
+						<Value Platform="Android">GeneratedSoundBanks\Android\</Value>
+						<Value Platform="iOS">GeneratedSoundBanks\iOS\</Value>
 					</ValueList>
 				</Property>
 				<Property Name="SoundBankPostGenerateCustomCmdDescription" Type="string">
 					<ValueList>
 						<Value Platform="Windows">Export AlloyFramework audio content</Value>
+						<Value Platform="Android">Export AlloyFramework audio content</Value>
+						<Value Platform="iOS">Export AlloyFramework audio content</Value>
 					</ValueList>
 				</Property>
 				<Property Name="SoundBankPostGenerateCustomCmdLines" Type="string">
 					<ValueList>
 						<Value Platform="Windows">powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(WwiseProjectPath)\..\..\UnityProj\Tools\Wwise\ExportAudioContent.ps1&quot; -Platform &quot;$(Platform)&quot;</Value>
+						<Value Platform="Android">powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$(WwiseProjectPath)\..\..\UnityProj\Tools\Wwise\ExportAudioContent.ps1" -Platform "$(Platform)"</Value>
+						<Value Platform="iOS">powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$(WwiseProjectPath)\..\..\UnityProj\Tools\Wwise\ExportAudioContent.ps1" -Platform "$(Platform)"</Value>
 					</ValueList>
 				</Property>
 				<Property Name="SoundBankPreGenerateCustomCmdDescription" Type="string">

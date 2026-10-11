@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e70a4e125b94148bf3822f6c4ca9021, type: 3}
+  m_Name: GameHotUpdateSettings
+  m_EditorClassIdentifier:
+  m_codeMode: 1
+  m_resourceMode: 1
+  m_editorHostMode: 0
+  m_serverURL: http://127.0.0.1:8080
+  m_channel: local
+  m_requestTimeoutSeconds: 30
+  m_requestRetryCount: 2
+  m_runtimeAssemblyName: Game.Runtime
+  m_installerTypeName: Game.GameRuntimeInstaller

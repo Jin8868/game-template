@@ -1,0 +1,11 @@
+<linker>
+  <!-- 框架启动依赖反射发现系统和入口，保留 AOT 框架注册及泛型调用边界。 -->
+  <assembly fullname="Alloy.Core" preserve="all" />
+  <assembly fullname="Alloy.Runtime" preserve="all" />
+  <assembly fullname="Alloy.HybridCLR" preserve="all" />
+  <assembly fullname="Alloy.Audio.Wwise" preserve="all" />
+  <assembly fullname="Game.Bootstrap" preserve="all" />
+  <assembly fullname="Game.Protocol" preserve="all" />
+  <assembly fullname="Luban.Runtime" preserve="all" />
+  <assembly fullname="UniTask" preserve="all" />
+</linker>

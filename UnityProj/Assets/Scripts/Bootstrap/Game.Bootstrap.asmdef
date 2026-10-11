@@ -3,8 +3,10 @@
   "rootNamespace": "Game",
   "references": [
     "Alloy.Runtime",
+    "Alloy.HybridCLR",
     "UniTask",
-    "Alloy.Audio.Wwise"
+    "Alloy.Audio.Wwise",
+    "UnityLogsViewer.Runtime"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

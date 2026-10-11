@@ -1,0 +1,3 @@
+<linker>
+  <assembly fullname="UnityLogsViewer.Runtime" preserve="all" />
+</linker>

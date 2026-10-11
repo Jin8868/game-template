@@ -66,10 +66,20 @@ namespace Game.UI
 
         private void OnJumpCompleted(UIHandle handle, Exception exception)
         {
+            // 跳转失败仍需记录，但延迟回调只能更新仍处于活动状态的首页。
             if (exception != null)
             {
-                View.TxtStatus.text = $"跳转失败：{exception.Message}";
                 AlloyDebug.Error(exception);
+                if (State == UIState.Active)
+                {
+                    View.TxtStatus.text = $"跳转失败：{exception.Message}";
+                }
+
+                return;
+            }
+
+            if (State != UIState.Active)
+            {
                 return;
             }
 
@@ -80,7 +90,7 @@ namespace Game.UI
         {
             // 业务只提供事件名称和归属，不管理 Bank、媒体或监听器。
             AudioManager.Instance.PlayAudio("Play_ButtonClick",
-                new AudioPlayOptions { Scope = m_audioScope,Volume = View.Volume});
+                new AudioPlayOptions { Scope = m_audioScope, Volume = View.Volume });
         }
 
         private void OnAnimationEventReceived(UIAnimationEventContext context)

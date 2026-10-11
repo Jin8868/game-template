@@ -9,3 +9,8 @@
 # iOS static libraries are installed through Wwise Launcher on iOS build machines.
 /Assets/Wwise/API/Runtime/Plugins/iOS/**/*.a
 /Assets/Wwise/API/Runtime/Plugins/iOS/**/*.a.meta
+# Network descriptors and generation staging are reproducible.
+/Protocol/Build/
+/Tools/Protobuf/protoc-34.1-win64.zip
+# Local server source and dependencies are not submitted.
+/Tools/NetworkDemoServer/

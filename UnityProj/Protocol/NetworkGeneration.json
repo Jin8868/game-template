@@ -1,0 +1,13 @@
+{
+    "ProtoRoot":  "Protocol/Proto",
+    "ProtocPath":  "Tools/Protobuf/Windows/34.1/bin/protoc.exe",
+    "StandardInclude":  "Tools/Protobuf/Windows/34.1/include",
+    "OptionsRoot":  "Packages/com.alloy.framework/Editor/Network/Protocol",
+    "OutputRoot":  "Assets/Scripts/Protocol/Generated",
+    "GeneratedNamespace":  "Game.Protocol",
+    "ProtocolVersion":  1,
+    "SelectedFiles": [],
+    "ServiceNamespace":  "Game.Network",
+    "ServiceAssembly":  "Game.Runtime",
+    "BusinessServiceRoot":  "Assets/Scripts/Runtime/Network/Services"
+}

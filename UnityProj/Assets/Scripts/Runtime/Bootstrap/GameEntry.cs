@@ -46,7 +46,7 @@ namespace Game
             // 先关闭启动界面，避免卸载场景后残留 UI。
             await CloseLoadingAsync();
 
-            // 原生音频退出后才允许框架资源系统关闭。
+            // 管线逆序释放网络等项目接入，再关闭原生音频和框架资源。
             m_startupPipeline.Shutdown();
             await AudioManager.Instance.ShutdownAsync();
 

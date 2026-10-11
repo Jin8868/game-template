@@ -1,0 +1,11 @@
+{
+  "protoc": "34.1",
+  "Google.Protobuf": "3.34.1",
+  "targetFramework": ".NETStandard,Version=v2.0",
+  "source": "https://github.com/protocolbuffers/protobuf/releases/tag/v34.1",
+  "archive": "protoc-34.1-win64.zip",
+  "archiveSHA256": "6d7ebdc75e9c1f0026d4fb28f17ef1d0aae77d36744d83a9e052d79ba493724f",
+  "protocSHA256": "9d704a5c1741ea78aab2e0d922d33ad8b13d2db2ef69ff464e61103f1657e0d6",
+  "optionsVersion": 1,
+  "generatorVersion": "2"
+}

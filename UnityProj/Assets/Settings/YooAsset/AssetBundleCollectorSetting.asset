@@ -77,19 +77,6 @@ MonoBehaviour:
         FilterRuleName: CollectAll
         AssetTags: 
         UserData: 
-    - GroupName: code
-      GroupDesc: Hot-update assemblies and AOT metadata
-      AssetTags: 
-      ActiveRuleName: EnableGroup
-      Collectors:
-      - CollectPath: Assets/Res/Code
-        CollectorGUID: db43d7aeeaa341718737fa93b4cb8774
-        CollectorType: 0
-        AddressRuleName: AddressByResPath
-        PackRuleName: PackDirectory
-        FilterRuleName: CollectAll
-        AssetTags: buildin;code
-        UserData: 
     - GroupName: fonts
       GroupDesc: Font resources
       AssetTags: 
@@ -201,5 +188,27 @@ MonoBehaviour:
         AddressRuleName: AddressWwiseAudio
         PackRuleName: PackRawFile
         FilterRuleName: CollectWwiseAudio
+        AssetTags: ''
+        UserData: ''
+  - PackageName: CodePackage
+    PackageDesc: HybridCLR assemblies and baseline metadata
+    EnableAddressable: 1
+    SupportExtensionless: 1
+    LocationToLower: 0
+    IncludeAssetGUID: 0
+    AutoCollectShaders: 0
+    IgnoreRuleName: RawFileIgnoreRule
+    Groups:
+    - GroupName: hotUpdateCode
+      GroupDesc: Verified runtime assemblies and AOT metadata
+      AssetTags: ''
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/HotUpdateCode
+        CollectorGUID: ''
+        CollectorType: 0
+        AddressRuleName: AddressByResPath
+        PackRuleName: PackRawFile
+        FilterRuleName: CollectAll
         AssetTags: ''
         UserData: ''

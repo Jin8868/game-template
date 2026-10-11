@@ -14,3 +14,6 @@
 /Tools/Protobuf/protoc-34.1-win64.zip
 # Local server source and dependencies are not submitted.
 /Tools/NetworkDemoServer/
+
+# HybridCLR downloaded sources, local IL2CPP runtime, and generated build files.
+/HybridCLRData/

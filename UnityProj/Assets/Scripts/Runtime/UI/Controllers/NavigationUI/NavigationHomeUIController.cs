@@ -19,22 +19,22 @@ namespace Game.UI
 
         protected override void OnInitData(UIEmptyData data)
         {
-            View.TxtStatus.text = "首页已打开，可验证 Push 和 Overlay。";
+            View.TxtStatus.text = "首页已打开，可验证 Push 和 Overlay。热更新V2";
         }
 
         protected override void OnRefresh(UIEmptyData data)
         {
-            View.TxtStatus.text = "首页已刷新。";
+            View.TxtStatus.text = "首页已刷新。热更新V2";
         }
 
         protected override void OnPause()
         {
-            View.TxtStatus.text = "首页已暂停。";
+            View.TxtStatus.text = "首页已暂停。热更新V2";
         }
 
         protected override void OnResume()
         {
-            View.TxtStatus.text = "首页已恢复，返回流程成功。";
+            View.TxtStatus.text = "首页已恢复，返回流程成功。热更新V2";
         }
 
         protected override void OnDispose()
@@ -49,7 +49,7 @@ namespace Game.UI
         private void OpenDetail()
         {
             PlayButtonClick();
-            View.TxtStatus.text = "正在以 Push 模式打开详情页……";
+            View.TxtStatus.text = "正在以 Push 模式打开详情页……热更新V2";
             UIManager.Instance.Jump(
                 NavigationJumpID.DETAIL,
                 onCompleted: OnJumpCompleted);
@@ -58,7 +58,7 @@ namespace Game.UI
         private void OpenPopup()
         {
             PlayButtonClick();
-            View.TxtStatus.text = "正在以 Overlay 模式打开弹窗……";
+            View.TxtStatus.text = "正在以 Overlay 模式打开弹窗……热更新V2";
             UIManager.Instance.Jump(
                 NavigationJumpID.POPUP,
                 onCompleted: OnJumpCompleted);
@@ -83,7 +83,7 @@ namespace Game.UI
                 return;
             }
 
-            View.TxtStatus.text = $"已打开 {handle.UIName}。";
+            View.TxtStatus.text = $"已打开 {handle.UIName}。热更新V2";
         }
 
         private void PlayButtonClick()
@@ -95,7 +95,7 @@ namespace Game.UI
 
         private void OnAnimationEventReceived(UIAnimationEventContext context)
         {
-            View.TxtStatus.text = $"收到动效事件：{context.AnimationKey}/{context.EventKey}。";
+            View.TxtStatus.text = $"收到动效事件：{context.AnimationKey}/{context.EventKey}。热更新V2";
         }
     }
 }

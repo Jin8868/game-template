@@ -502,6 +502,7 @@ MonoBehaviour:
   m_btnOpenDetail: {fileID: 1054733498184580250}
   m_btnOpenPopup: {fileID: 5960642441865897520}
   m_txtStatus: {fileID: 49284927105314654}
+  Volume: 1
 --- !u!114 &-8308275747302111682
 MonoBehaviour:
   m_ObjectHideFlags: 0

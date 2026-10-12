@@ -17,28 +17,13 @@ namespace Game.UI
 
         private static Dictionary<string, UIDefinition> CreateDefinitions()
         {
-            var definitions = new Dictionary<string, UIDefinition>(4);
+            var definitions = new Dictionary<string, UIDefinition>(3);
             AddDefinitions0(definitions);
             return definitions;
         }
 
         private static void AddDefinitions0(Dictionary<string, UIDefinition> definitions)
         {
-            // 注册 LoadingUI 的静态界面定义。
-            definitions.Add(
-                "LoadingUI",
-                new UIDefinitionBuilder<LoadingUIView, LoadingUIController>("LoadingUI")
-                    .Location("Prefabs/UI/LoadingUI/LoadingUI")
-                    .Layer(UILayer.WINDOW)
-                    .Layout(UILayoutMode.Window)
-                    .Background(UIBackgroundMode.None)
-                    .Input(UIInputMode.Block)
-                    .Cache(UICacheMode.DestroyOnClose)
-                    .OpenMode(UIOpenMode.SingleRefresh)
-                    .Navigation(UINavigationMode.None)
-                    .PauseCovered(false)
-                    .Build());
-
             // 注册 NavigationDetailUI 的静态界面定义。
             definitions.Add(
                 "NavigationDetailUI",

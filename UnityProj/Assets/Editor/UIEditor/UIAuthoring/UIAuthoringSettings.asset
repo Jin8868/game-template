@@ -41,20 +41,6 @@ MonoBehaviour:
     m_openMode: 0
     m_navigation: 0
     m_pauseCovered: 0
-  - m_prefabGuid: f0b602c1fb38b55448bfb406139bc69f
-    m_uiName: LoadingUI
-    m_scriptNamespace: Game.UI
-    m_viewFolder: Assets/Scripts/Runtime/UI/Views/LoadingUI
-    m_controllerFolder: Assets/Scripts/Runtime/UI/Controllers/LoadingUI
-    m_hasGenerated: 1
-    m_layer: 100
-    m_layout: 1
-    m_background: 0
-    m_input: 1
-    m_cache: 0
-    m_openMode: 0
-    m_navigation: 0
-    m_pauseCovered: 0
   - m_prefabGuid: 0b5bd459771f1144c99ad91ecd604c29
     m_uiName: NavigationDetailUI
     m_scriptNamespace: Game.UI

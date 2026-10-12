@@ -12,7 +12,6 @@ namespace Game
         {
             // 最先安装 AOT 日志面板，记录后续入口与资源初始化的错误。
             GameLogViewerInstaller.Install();
-            GameBootConfiguration.InstallStatus();
 
             // 代码准备必须早于业务配置初始化；业务入口只消费准备好的程序集。
             GameHotUpdateSettings settings = GameHotUpdateSettings.Load();

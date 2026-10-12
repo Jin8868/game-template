@@ -6,7 +6,8 @@
     "Alloy.HybridCLR",
     "UniTask",
     "Alloy.Audio.Wwise",
-    "UnityLogsViewer.Runtime"
+    "UnityLogsViewer.Runtime",
+    "Unity.ugui"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

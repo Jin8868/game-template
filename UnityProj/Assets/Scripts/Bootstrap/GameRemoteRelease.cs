@@ -52,7 +52,7 @@ namespace Game
             m_baselineURL = m_settings.ServerURL + "/" + identity.Platform + "/" +
                 m_settings.Channel + "/" + identity.BaselineID;
             string url = m_baselineURL + "/release.json";
-            GameBootConfiguration.SetStatus("检查热更新版本……");
+            StartupLoading.ReportOperation(EStartupLoadingStage.CheckingRelease, "检查热更新版本");
             for (int attempt = 0; attempt <= m_settings.RequestRetryCount; attempt++)
             {
                 // 每次重试独立请求；取消时释放请求并终止网络传输。

@@ -1,10 +1,10 @@
+using System;
 using System.Threading;
 using AlloyFramework;
 using AlloyFramework.Audio;
 using AlloyFramework.UI;
 using Cysharp.Threading.Tasks;
 using Game.UI;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Scripting;
 
@@ -13,28 +13,47 @@ namespace Game
     [Preserve]
     public sealed class GameEntry : IGameEntry
     {
-        private const string SHUTDOWNSCENENAME = "AlloyFrameworkShutdown";
+        private const string SHUTDOWNSCENENAME = "AlloyFrameworkShutdown"; // 卸载最后一个场景时的承接场景。
+        private const int INITIALGAMESTEPCOUNT = 2; // 首场景加载与首页打开两个真实步骤。
 
         private readonly GameStartupPipeline m_startupPipeline = new GameStartupPipeline(); // 业务启动步骤管线。
         private ISceneHandle m_sceneHandle; // 当前加载的游戏场景句柄。
-        private UIHandle<LoadingUIController> m_loadingHandle; // 启动加载界面的运行时句柄。
+        private IStartupLoadingSession m_loadingSession; // 框架交付的同一 AOT Loading 控制权。
+        private bool m_hasStarted; // 防止重复接管和重复执行业务入口。
 
         /// <summary>
         /// 执行业务启动流程并进入首个游戏场景。
         /// </summary>
         /// <param name="cancellationToken">用于取消本次启动流程的令牌。</param>
         /// <returns>表示异步启动流程的任务。</returns>
+        /// <exception cref="InvalidOperationException">重复执行业务入口或框架尚未交出 Loading。</exception>
         public async UniTask MainAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            AlloyDebug.Log("Game entry started.");
+            if (m_hasStarted) throw new InvalidOperationException("业务入口不能重复执行。");
+            m_hasStarted = true;
 
-            ///// 先完成业务对框架能力的安装与校验,业务层不能删除！/////
-            await m_startupPipeline.RunAsync(cancellationToken);
-            ///// 先完成业务对框架能力的安装与校验,业务层不能删除！/////
-
-            // 以下是业务层入口，调用业务层逻辑
-            await StartInitialGameAsync(cancellationToken);
+            // 接管早于异步业务初始化，显式从框架百分之百重置为业务零进度。
+            m_loadingSession = StartupLoading.TakeOver(m_startupPipeline.StepCount + INITIALGAMESTEPCOUNT);
+            AlloyDebug.Log("[GameStartup] 业务已接管统一 Loading。");
+            try
+            {
+                // 模型注册、框架扩展、网络和音频安装都是必需步骤，不能省略或重复执行。
+                await m_startupPipeline.RunAsync(m_loadingSession, cancellationToken);
+                await LoadInitialSceneAsync(cancellationToken);
+                await EnterInitialUIAsync(cancellationToken);
+                CloseLoading();
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                // 显示并冻结具体失败步骤，再由框架逆序清理，保留独立的 AOT 错误面板。
+                m_loadingSession?.Fail(exception);
+                throw;
+            }
         }
 
         /// <summary>
@@ -43,8 +62,8 @@ namespace Game
         /// <returns>表示异步关闭流程的任务。</returns>
         public async UniTask ShutdownAsync()
         {
-            // 先关闭启动界面，避免卸载场景后残留 UI。
-            await CloseLoadingAsync();
+            // 解除业务展示持有关系；启动失败时 AOT 错误面板仍然保留。
+            CloseLoading();
 
             // 管线逆序释放网络等项目接入，再关闭原生音频和框架资源。
             m_startupPipeline.Shutdown();
@@ -59,52 +78,40 @@ namespace Game
                 EnsureSceneCanUnload(sceneHandle);
                 await sceneHandle.UnloadAsync();
             }
-
         }
 
-        private async UniTask CloseLoadingAsync()
+        private void CloseLoading()
         {
-            var loadingHandle = m_loadingHandle;
-            m_loadingHandle = null;
-            if (loadingHandle != null && loadingHandle.IsValid)
-            {
-                await loadingHandle.CloseAsync();
-            }
-        }
-
-        private async UniTask StartInitialGameAsync(CancellationToken cancellationToken)
-        {
-            await OpenStartupLoadingAsync(cancellationToken);
-            await LoadInitialSceneAsync(cancellationToken);
-            await EnterInitialUIAsync(cancellationToken);
-        }
-
-        private async UniTask OpenStartupLoadingAsync(CancellationToken cancellationToken)
-        {
-            // 打开加载界面后再移除框架启动屏，保证场景加载过程始终有反馈。
-            m_loadingHandle = await UIManager.Instance.OpenAsync(
-                GameUI.LoadingUI,
-                cancellationToken);
-            await UniTask.NextFrame(cancellationToken);
-            FrameworkBootstrap.DestroyStartupScreen();
+            var session = m_loadingSession;
+            m_loadingSession = null;
+            session?.Dispose();
         }
 
         private async UniTask LoadInitialSceneAsync(CancellationToken cancellationToken)
         {
-            // 首个业务场景的加载进度由加载界面显示。
+            // 真实场景回调只更新本步骤，权重由同一个聚合器计算。
+            m_loadingSession.BeginStep(EStartupLoadingStage.LoadingScene, "加载首个游戏场景");
             m_sceneHandle = await ResourceManager.Instance.LoadSceneAsync(
                 "Scenes/SampleScene",
-                LoadCallBack,
+                OnSceneLoadProgress,
                 cancellationToken: cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            m_loadingSession.CompleteStep();
         }
 
         private async UniTask EnterInitialUIAsync(CancellationToken cancellationToken)
         {
-            // 场景加载完成后关闭启动界面，并通过配置 ID 进入业务首屏。
-            await CloseLoadingAsync();
-            await UIManager.Instance.JumpAsync(
+            // 首页完成导航并获得一帧显示机会后才关闭 Loading，避免空白间隙。
+            m_loadingSession.BeginStep(EStartupLoadingStage.OpeningHome, "打开游戏首页");
+            var homeHandle = await UIManager.Instance.JumpAsync(
                 NavigationJumpID.HOME,
                 cancellationToken: cancellationToken);
+            await UniTask.NextFrame(cancellationToken);
+            if (homeHandle == null || !homeHandle.IsValid || homeHandle.State != UIState.Active)
+            {
+                throw new InvalidOperationException("游戏首页尚未就绪，不能关闭启动 Loading。");
+            }
+            m_loadingSession.CompleteStep();
         }
 
         private static void EnsureSceneCanUnload(ISceneHandle sceneHandle)
@@ -121,16 +128,9 @@ namespace Game
             SceneManager.SetActiveScene(shutdownScene);
         }
 
-        private void LoadCallBack(float progress)
+        private void OnSceneLoadProgress(float progress)
         {
-            var loadingHandle = m_loadingHandle;
-            if (loadingHandle == null || !loadingHandle.IsValid)
-            {
-                return;
-            }
-
-            var normalizedProgress = Mathf.Clamp01(progress);
-            loadingHandle.Controller.RefreshProgress(normalizedProgress);
+            m_loadingSession?.Report(progress);
         }
     }
 }

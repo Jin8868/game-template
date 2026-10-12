@@ -326,7 +326,7 @@ GameObject:
   - component: {fileID: -2892911729772517344}
   - component: {fileID: 3747332463847738320}
   m_Layer: 5
-  m_Name: LoadingUI
+  m_Name: GameStartupLoading
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -376,7 +376,7 @@ Canvas:
   m_GameObject: {fileID: 5220505154570004289}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 1
+  m_RenderMode: 0
   m_Camera: {fileID: 0}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
@@ -388,7 +388,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 32767
   m_TargetDisplay: 0
 --- !u!114 &-2892911729772517344
 MonoBehaviour:
@@ -422,13 +422,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 5220505154570004289}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0ff1bea9720bc454d97834b768ede3e2, type: 3}
+  m_Script: {fileID: 11500000, guid: 4e10bd6586fc4f3c807a7c575a0a760a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_imgBg: {fileID: 8463209236086586236}
-  m_sliderProgress: {fileID: 1032893985636019219}
-  m_txtLoding: {fileID: 111279955829927455}
-  m_txtPercent: {fileID: 6787757636469541283}
+  m_progressSlider: {fileID: 1032893985636019219}
+  m_statusText: {fileID: 111279955829927455}
+  m_percentText: {fileID: 6787757636469541283}
 --- !u!1 &5924609834552527036
 GameObject:
   m_ObjectHideFlags: 0

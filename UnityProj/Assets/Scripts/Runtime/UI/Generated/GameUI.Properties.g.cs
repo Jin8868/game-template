@@ -8,12 +8,6 @@ namespace Game.UI
     {
 
         /// <summary>
-        /// LoadingUI 的静态界面定义。
-        /// </summary>
-        public static UIDefinition<LoadingUIView, LoadingUIController> LoadingUI =>
-            (UIDefinition<LoadingUIView, LoadingUIController>)m_definitions["LoadingUI"];
-
-        /// <summary>
         /// NavigationDetailUI 的静态界面定义。
         /// </summary>
         public static UIDefinition<NavigationDetailUIView, NavigationDetailUIController> NavigationDetailUI =>

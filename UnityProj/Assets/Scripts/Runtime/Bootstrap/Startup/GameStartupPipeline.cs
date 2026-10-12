@@ -12,6 +12,8 @@ namespace Game
         private int m_startedStepCount; // 已开始执行、需要逆序释放的步骤数。
         private bool m_hasRun; // 管线是否已经执行过。
 
+        internal int StepCount => m_steps.Count;
+
         internal GameStartupPipeline()
         {
             // 显式声明项目安装顺序，网络注册管理在进入首个页面前安装。
@@ -55,7 +57,18 @@ namespace Game
         /// <summary>执行全部业务启动步骤。</summary>
         /// <param name="cancellationToken">用于取消启动流程的令牌。</param>
         /// <returns>完整启动过程的任务。</returns>
-        internal async UniTask RunAsync(CancellationToken cancellationToken)
+        internal UniTask RunAsync(CancellationToken cancellationToken)
+        {
+            return RunAsync(null, cancellationToken);
+        }
+
+        /// <summary>在统一 Loading 下执行所有必需业务步骤。</summary>
+        /// <param name="loadingSession">本轮业务会话；独立使用管线时可为空。</param>
+        /// <param name="cancellationToken">用于取消启动流程的令牌。</param>
+        /// <returns>全部业务安装完成任务。</returns>
+        internal async UniTask RunAsync(
+            IStartupLoadingSession loadingSession,
+            CancellationToken cancellationToken)
         {
             if (m_hasRun)
             {
@@ -70,8 +83,26 @@ namespace Game
                 var step = m_steps[index];
                 m_startedStepCount = index + 1;
                 var startedAt = DateTime.UtcNow;
+                loadingSession?.BeginStep(EStartupLoadingStage.InitializingBusiness, step.Name);
                 AlloyDebug.Log($"[GameStartup] 开始：{step.Name}");
-                await step.ExecuteAsync(cancellationToken);
+                try
+                {
+                    await step.ExecuteAsync(cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    loadingSession?.CompleteStep();
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    AlloyDebug.Log($"[GameStartup] 取消：{step.Name}");
+                    throw;
+                }
+                catch (Exception exception)
+                {
+                    var failedElapsed = DateTime.UtcNow - startedAt;
+                    AlloyDebug.Error($"[GameStartup] {step.Name} 失败，耗时 {failedElapsed.TotalMilliseconds:F1} ms");
+                    loadingSession?.Fail(exception);
+                    throw;
+                }
                 var elapsed = DateTime.UtcNow - startedAt;
                 AlloyDebug.Log($"[GameStartup] 完成：{step.Name}，耗时 {elapsed.TotalMilliseconds:F1} ms");
             }

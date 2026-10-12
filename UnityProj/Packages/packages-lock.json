@@ -27,6 +27,14 @@
       "dependencies": {},
       "hash": "7c0f199fe0d3fc528024488ccd671e6c7b27745b"
     },
+    "com.pulse.videoplayer": {
+      "version": "file:../../../PulseVideoPlayer/Packages/com.pulse.videoplayer",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.cysharp.unitask": "2.5.10"
+      }
+    },
     "com.tuyoogame.yooasset": {
       "version": "https://github.com/tuyoogame/YooAsset.git?path=Assets/YooAsset#2.3.19",
       "depth": 0,

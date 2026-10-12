@@ -32,7 +32,7 @@ namespace Game.Editor
 
         public int callbackOrder => 10000;
 
-        [MenuItem("★AlloyFramework★/热更新/配置 Windows 和 Android 接入")]
+        [MenuItem("★AlloyFramework★/出包/构建配置/配置 Windows 与 Android 热更新接入")]
         internal static void Configure()
         {
             CheckEditorState();
@@ -92,7 +92,7 @@ namespace Game.Editor
             Debug.Log("[HybridCLR] Windows x64 / Android ARM64 接入配置完成；请按目标平台准备主包代码资源。");
         }
 
-        [MenuItem("★AlloyFramework★/热更新/准备当前平台主包代码资源")]
+        [MenuItem("★AlloyFramework★/出包/单项操作/单独生成主包代码与 AOT 基线")]
         internal static void PrepareMainPackage()
         {
             CheckEditorState();
@@ -105,7 +105,9 @@ namespace Game.Editor
                 Array.IndexOf(HybridCLRSettings.Instance.hotUpdateAssemblies ?? Array.Empty<string>(),
                     entrySettings.RuntimeAssemblyName) < 0))
             {
-                throw new BuildFailedException("请先执行配置 Windows 和 Android 接入，再等待 Unity 编译完成。");
+                throw new BuildFailedException(
+                    "请先执行 ★AlloyFramework★/出包/构建配置/配置 Windows 与 Android 热更新接入，" +
+                    "再等待 Unity 编译完成。");
             }
             string baselineID = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
             string baselineDirectory = Path.Combine(BASELINEROOT, target.ToString(), baselineID);
@@ -180,7 +182,8 @@ namespace Game.Editor
                 File.WriteAllText(Path.Combine(baselineDirectory, "generated-cpp.txt"),
                     GameBuildFingerprint.DirectoryHash(SettingsUtil.GeneratedCppDir));
                 Debug.Log($"[HybridCLR] 主包代码准备完成：{target}，基线={baselineID}。" +
-                    "请继续构建 DefaultPackage、AudioPackage，然后构建 Player；最终 AOT 校验通过才确认基线。");
+                    "本操作仅完成主包代码与 AOT 基线准备；" +
+                    "完整安装包请执行 ★AlloyFramework★/出包/一键完整出包。");
             }
             catch
             {
@@ -214,14 +217,15 @@ namespace Game.Editor
                 File.ReadAllText(Path.Combine(directory, "configuration.txt")) !=
                     GetConfiguration(report.summary.platform))
             {
-                throw new BuildFailedException("主包准备结果缺失或配置已改变，请重新准备当前平台主包代码资源。");
+                throw new BuildFailedException("主包准备结果缺失或配置已改变，请重新生成主包代码与 AOT 基线。");
             }
             // 在长时间 IL2CPP 构建前拦截源码变化，旧基线必须重新准备。
             string fingerprintPath = Path.Combine(directory, "code-input.txt");
             if (!File.Exists(fingerprintPath) || File.ReadAllText(fingerprintPath) != GameBuildFingerprint.Code(true))
             {
                 string changes = GameBuildFingerprint.DescribeCodeChanges(directory, true);
-                throw new BuildFailedException("主包代码或 AOT 输入已变化，请重新准备主包代码资源或执行一键完整出包。\n" +
+                throw new BuildFailedException("主包代码或 AOT 输入已变化，请重新生成主包代码与 AOT 基线" +
+                    "或执行一键完整出包。\n" +
                     changes);
             }
             string generatedPath = Path.Combine(directory, "generated-cpp.txt");
@@ -268,7 +272,7 @@ namespace Game.Editor
                 throw new BuildFailedException(
                     $"最终 AOT 程序集集合改变，不能确认本次主包基线 {identity.BaselineID}。" +
                     $"新增：[{string.Join(", ", addedNames)}]；缺失：[{string.Join(", ", removedNames)}]。" +
-                    "请执行 ★AlloyFramework★/热更新/准备当前平台主包代码资源，再重新构建 Player。");
+                    "请执行 ★AlloyFramework★/出包/单项操作/单独生成主包代码与 AOT 基线，再重新构建 Player。");
             }
             foreach (string file in archivedFiles)
             {
@@ -350,7 +354,8 @@ namespace Game.Editor
             ValidateTarget(target);
             if (!File.Exists(IDENTITYPATH))
             {
-                throw new BuildFailedException("请先执行 ★AlloyFramework★/热更新/准备当前平台主包代码资源。");
+                throw new BuildFailedException(
+                    "请先执行 ★AlloyFramework★/出包/单项操作/单独生成主包代码与 AOT 基线。");
             }
             var identity = JsonUtility.FromJson<HotUpdatePlayerIdentity>(File.ReadAllText(IDENTITYPATH));
             if (identity == null || identity.Platform != target.ToString() ||

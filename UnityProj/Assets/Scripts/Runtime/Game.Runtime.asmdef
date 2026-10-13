@@ -5,6 +5,7 @@
     "Alloy.Runtime",
     "Luban.Runtime",
     "UniTask",
+    "PulseVideoPlayer",
     "Unity.TextMeshPro",
     "Unity.ugui"
   ],

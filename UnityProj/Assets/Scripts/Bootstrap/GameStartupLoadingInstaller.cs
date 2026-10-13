@@ -18,6 +18,8 @@ namespace Game
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void InstallEditorFallback()
         {
+            // 独立测试无需安装框架启动界面。
+            if (UnityEditor.SessionState.GetBool("AlloyFramework.SkipAutomaticStartup", false)) return;
             // 直接从业务场景运行时也使用同一个内置界面，正式 Player 由 Boot 注册。
             EnsurePresenter();
         }

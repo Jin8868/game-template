@@ -1,0 +1,13 @@
+{
+  "name": "Game.Pulse.Editor",
+  "rootNamespace": "Game.Editor",
+  "references": [
+    "PulseVideoPlayer",
+    "Game.Runtime",
+    "Unity.ugui"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": false
+}

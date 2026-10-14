@@ -55,3 +55,17 @@ MonoBehaviour:
     m_openMode: 0
     m_navigation: 0
     m_pauseCovered: 0
+  - m_prefabGuid: 4b04925d3f103e0439b85344bb8af652
+    m_uiName: VideoPreviewUI
+    m_scriptNamespace: Game.UI
+    m_viewFolder: Assets/Scripts/Runtime/UI/Views
+    m_controllerFolder: Assets/Scripts/Runtime/UI/Controllers
+    m_hasGenerated: 1
+    m_layer: 100
+    m_layout: 1
+    m_background: 0
+    m_input: 1
+    m_cache: 0
+    m_openMode: 0
+    m_navigation: 0
+    m_pauseCovered: 0

@@ -11,16 +11,17 @@ using UnityEngine.UI;
 
 namespace Game.Video
 {
-    /// <summary>用于 Windows 原生首帧链路验证的业务展示组件。</summary>
+    /// <summary>用于 Windows 连续播放、暂停与原生资源验证的业务展示组件。</summary>
     public sealed class PulseFirstFrameView : MonoBehaviour
     {
         private static readonly int m_rgbRectID = Shader.PropertyToID("_RGBRect"); // RGB 区域参数。
         private static readonly int m_alphaRectID = Shader.PropertyToID("_AlphaRect"); // Alpha 区域参数。
         private static readonly int m_hasAlphaID = Shader.PropertyToID("_HasAlpha"); // 透明模式参数。
         private static readonly int m_unpremultiplyID = Shader.PropertyToID("_Unpremultiply"); // 去预乘参数。
-        [SerializeField] private RawImage m_targetImage; // 首帧纹理显示对象。
+        [SerializeField] private RawImage m_targetImage; // 视频纹理显示对象。
         [SerializeField] private string m_relativePath = "PulseTests/Synthetic/all_in_one.pulse"; // 默认帧号测试源。
         [SerializeField] private bool m_openAutomatically = true; // 进入运行模式时自动打开。
+        [SerializeField] private bool m_playAutomatically = true; // 准备完成后自动开始连续播放。
         private PulsePlayer m_player; // 当前播放器实例。
         private Material m_material; // 当前视频的区域采样材质。
         private CancellationTokenSource m_openCancellation; // 展示组件打开操作的取消源。
@@ -32,6 +33,8 @@ namespace Game.Video
         private bool m_nativeDiagnosticsUnavailable; // 缺少新版 DLL 时避免反复触发入口查找异常。
         private GUIStyle m_buttonStyle; // 重用的加大按钮样式。
         private GUIStyle m_labelStyle; // 重用的统计文本样式。
+        private string m_playbackStatus = "尚未打开视频。"; // 低频更新的时间与帧序号信息。
+        private double m_nextPlaybackSample; // 下一次播放状态文本采样时间。
 #endif
 
         private void OnEnable()
@@ -45,6 +48,15 @@ namespace Game.Video
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         private void Update()
         {
+            double now = Time.realtimeSinceStartupAsDouble;
+            if (now >= m_nextPlaybackSample)
+            {
+                m_nextPlaybackSample = now + 0.1;
+                m_playbackStatus = m_player == null ? "尚未打开视频。" :
+                    $"状态 {m_player.State}，时间 {m_player.GetPlayTimeMs() / 1000:F2}" +
+                    $" / {m_player.DurationSeconds:F2} 秒\n已提交帧 {m_player.PresentedFrame}，" +
+                    $"纹理版本 {m_player.TextureVersion}，追赶丢帧 {m_player.DroppedFrames}";
+            }
             // 低频采样并缓存显示文本，不逐帧打印，避免诊断本身制造大量日志分配。
             if (Time.realtimeSinceStartupAsDouble < m_nextResourceSample) return;
             m_nextResourceSample = Time.realtimeSinceStartupAsDouble + 1;
@@ -52,8 +64,13 @@ namespace Game.Video
         }
 #endif
 
-        /// <summary>取消旧展示并打开指定视频的首帧。</summary>
+        /// <summary>取消旧展示并打开视频，按配置决定准备完成后是否自动播放。</summary>
         public void Open()
+        {
+            OpenCore(m_playAutomatically);
+        }
+
+        private void OpenCore(bool playAfterReady)
         {
             if (!Application.isPlaying) return;
             Close();
@@ -67,9 +84,53 @@ namespace Game.Video
             var cancellation = new CancellationTokenSource();
             int generation = ++m_generation;
             m_player = player;
+            player.Started += OnStarted;
+            player.Paused += OnPaused;
+            player.Resumed += OnResumed;
+            player.Completed += OnCompleted;
+            player.Failed += OnPlaybackFailed;
             m_openCancellation = cancellation;
             m_status = "正在读取、解码并提交首帧……";
-            OpenCoreAsync(player, generation, cancellation).Forget(LogUnhandled);
+            OpenCoreAsync(player, generation, cancellation, playAfterReady).Forget(LogUnhandled);
+        }
+
+        /// <summary>开始播放、从暂停恢复，或在结束后重新打开文件重播。</summary>
+        public void PlayOrResume()
+        {
+            if (m_player == null) return;
+            try
+            {
+                switch (m_player.State)
+                {
+                    case EPulsePlayerState.Ready:
+                        m_player.Play();
+                        break;
+                    case EPulsePlayerState.Paused:
+                        m_player.Resume();
+                        break;
+                    case EPulsePlayerState.Ended:
+                        OpenCore(true);
+                        break;
+                }
+            }
+            catch (Exception exception)
+            {
+                OnPlaybackFailed(exception);
+            }
+        }
+
+        /// <summary>冻结当前播放时间并保留画面。</summary>
+        public void Pause()
+        {
+            if (m_player == null || m_player.State != EPulsePlayerState.Playing) return;
+            try
+            {
+                m_player.Pause();
+            }
+            catch (Exception exception)
+            {
+                OnPlaybackFailed(exception);
+            }
         }
 
         /// <summary>解除画面绑定并请求异步回收当前会话。</summary>
@@ -87,7 +148,16 @@ namespace Game.Video
                 m_targetImage.texture = null;
                 m_targetImage.material = null;
             }
-            m_player?.Dispose();
+            if (m_player != null)
+            {
+                // 旧会话不能继续向展示组件发送事件。
+                m_player.Started -= OnStarted;
+                m_player.Paused -= OnPaused;
+                m_player.Resumed -= OnResumed;
+                m_player.Completed -= OnCompleted;
+                m_player.Failed -= OnPlaybackFailed;
+                m_player.Dispose();
+            }
             m_player = null;
             if (m_material != null) Destroy(m_material);
             m_material = null;
@@ -150,7 +220,7 @@ namespace Game.Video
 #endif
 
         private async UniTask OpenCoreAsync(
-            PulsePlayer player, int generation, CancellationTokenSource cancellation)
+            PulsePlayer player, int generation, CancellationTokenSource cancellation, bool playAfterReady)
         {
             try
             {
@@ -177,9 +247,10 @@ namespace Game.Video
                 m_status = $"首帧就绪：{metadata.DisplayWidth}×{metadata.DisplayHeight}，Alpha {metadata.AlphaMode}。";
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.Log(
-                    $"[Pulse] {m_status} 当前仅显示首帧，原始 PTS {player.FirstFrameTimestamp}（100ns）。", this);
+                    $"[Pulse] {m_status} 原始首帧 PTS {player.FirstFrameTimestamp}（100ns）。", this);
                 LogResources("首帧就绪");
 #endif
+                if (playAfterReady) player.Play();
             }
             catch (OperationCanceledException)
             {
@@ -199,6 +270,46 @@ namespace Game.Video
                 if (ReferenceEquals(m_openCancellation, cancellation)) m_openCancellation = null;
                 cancellation.Dispose();
             }
+        }
+
+        private void OnStarted()
+        {
+            m_status = "正在播放。";
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log("[Pulse] 开始连续播放，时钟从零开始。", this);
+#endif
+        }
+
+        private void OnPaused()
+        {
+            m_status = "已暂停，播放时钟保持不变。";
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log($"[Pulse] 暂停于 {m_player.GetPlayTimeMs() / 1000:F3} 秒。", this);
+#endif
+        }
+
+        private void OnResumed()
+        {
+            m_status = "已恢复播放。";
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log($"[Pulse] 从 {m_player.GetPlayTimeMs() / 1000:F3} 秒继续播放。", this);
+#endif
+        }
+
+        private void OnCompleted()
+        {
+            m_status = "播放结束，保留末帧。可以重新播放或关闭。";
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log($"[Pulse] 播放结束，末帧 {m_player.PresentedFrame}。", this);
+            LogResources("播放结束（仍保留输出纹理，关闭后才释放）");
+#endif
+        }
+
+        private void OnPlaybackFailed(Exception exception)
+        {
+            Close();
+            m_status = exception.Message;
+            Debug.LogException(exception, this);
         }
 
         private static Vector4 GetUVRegion(PulseRegion region, PulseMetadata metadata)
@@ -225,12 +336,33 @@ namespace Game.Video
                 m_labelStyle.wordWrap = true;
             }
             // 仅供手动验证打开、关闭与重开，不作为正式业务 UI。
-            float buttonWidth = Mathf.Min(220, (Screen.width - 36) * 0.5f);
-            if (GUI.Button(new Rect(12, 12, buttonWidth, 60), "打开首帧", m_buttonStyle)) Open();
+            float panelWidth = Mathf.Min(480, Screen.width * 0.4f);
+            float buttonWidth = Mathf.Max(60, (panelWidth - 36) * 0.5f);
+            m_buttonStyle.fontSize = Mathf.Clamp((int)(buttonWidth / 220 * 24), 14, 24);
+            GUI.Box(new Rect(4, 4, panelWidth, 460), string.Empty);
+            if (GUI.Button(new Rect(12, 12, buttonWidth, 60), "打开视频", m_buttonStyle)) Open();
             if (GUI.Button(new Rect(buttonWidth + 24, 12, buttonWidth, 60),
                 "关闭播放器", m_buttonStyle)) Close();
-            GUI.Label(new Rect(12, 80, Screen.width - 24, 52), m_status, m_labelStyle);
-            GUI.Label(new Rect(12, 136, Screen.width - 24, 130), m_resourceStatus, m_labelStyle);
+            bool wasEnabled = GUI.enabled;
+            GUI.enabled = wasEnabled && m_player != null &&
+                (m_player.State == EPulsePlayerState.Ready || m_player.State == EPulsePlayerState.Paused ||
+                m_player.State == EPulsePlayerState.Ended);
+            string playLabel = m_player?.State == EPulsePlayerState.Ended ? "重新播放" : "播放 / 恢复";
+            if (GUI.Button(new Rect(12, 84, buttonWidth, 60), playLabel, m_buttonStyle)) PlayOrResume();
+            GUI.enabled = wasEnabled && m_player?.State == EPulsePlayerState.Playing;
+            if (GUI.Button(new Rect(buttonWidth + 24, 84, buttonWidth, 60), "暂停", m_buttonStyle)) Pause();
+            GUI.enabled = wasEnabled;
+            GUI.Label(new Rect(12, 152, panelWidth - 24, 60), m_status, m_labelStyle);
+            GUI.Label(new Rect(12, 216, panelWidth - 24, 80), m_playbackStatus, m_labelStyle);
+            // 仅显示进度，不使用可拖动控件，避免让界面承诺尚未实现的 Seek。
+            float progress = m_player == null || m_player.DurationSeconds <= 0 ? 0 :
+                (float)(m_player.GetPlayTimeMs() / (m_player.DurationSeconds * 1000));
+            GUI.Box(new Rect(12, 300, panelWidth - 24, 16), string.Empty);
+            if (progress > 0)
+            {
+                GUI.Box(new Rect(12, 300, (panelWidth - 24) * Mathf.Clamp01(progress), 16), string.Empty);
+            }
+            GUI.Label(new Rect(12, 326, panelWidth - 24, 130), m_resourceStatus, m_labelStyle);
         }
 #endif
 

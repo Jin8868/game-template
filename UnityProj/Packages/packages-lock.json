@@ -32,7 +32,8 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.cysharp.unitask": "2.5.10"
+        "com.cysharp.unitask": "2.5.10",
+        "com.unity.ugui": "1.0.0"
       }
     },
     "com.tuyoogame.yooasset": {

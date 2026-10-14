@@ -48,7 +48,8 @@ namespace Game.Editor
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             if (File.Exists(TESTSCENEPATH))
             {
-                EditorSceneManager.OpenScene(TESTSCENEPATH);
+                var existingScene = EditorSceneManager.OpenScene(TESTSCENEPATH);
+                if (EnsurePlaybackViewport()) EditorSceneManager.SaveScene(existingScene, TESTSCENEPATH);
                 SetTestStartScene();
                 return;
             }
@@ -82,10 +83,49 @@ namespace Game.Editor
             var serializedView = new SerializedObject(view);
             serializedView.FindProperty("m_targetImage").objectReferenceValue = image;
             serializedView.ApplyModifiedPropertiesWithoutUndo();
+            EnsurePlaybackViewport();
             EditorSceneManager.SaveScene(scene, TESTSCENEPATH);
             SetTestStartScene();
             Selection.activeGameObject = canvasRoot;
-            Debug.Log("[Pulse] 首帧测试场景已创建。先构建 Windows 原生 DLL，再进入 Play 模式。");
+            Debug.Log("[Pulse] 播放测试场景已准备。先构建新版 Windows DLL，再按 Play 验证播放与暂停。");
+        }
+
+        private static bool EnsurePlaybackViewport()
+        {
+            // 同时升级旧测试场景，使左侧按钮和状态文字不遮住视频帧号水印。
+            var view = UnityEngine.Object.FindObjectOfType<PulseFirstFrameView>();
+            if (view == null) return false;
+            var serializedView = new SerializedObject(view);
+            var image = serializedView.FindProperty("m_targetImage").objectReferenceValue as RawImage;
+            if (image == null) return false;
+            Transform parent = image.transform.parent;
+            if (parent != null && parent.name == "Video Viewport") return false;
+            var viewportRoot = new GameObject("Video Viewport", typeof(RectTransform));
+            var viewport = viewportRoot.GetComponent<RectTransform>();
+            viewport.SetParent(view.transform, false);
+            viewport.anchorMin = new Vector2(0.42f, 0.05f);
+            viewport.anchorMax = new Vector2(0.98f, 0.95f);
+            viewport.offsetMin = Vector2.zero;
+            viewport.offsetMax = Vector2.zero;
+            image.transform.SetParent(viewport, false);
+            var imageRect = image.rectTransform;
+            imageRect.anchorMin = Vector2.zero;
+            imageRect.anchorMax = Vector2.one;
+            imageRect.offsetMin = Vector2.zero;
+            imageRect.offsetMax = Vector2.zero;
+            return true;
+        }
+
+        [MenuItem("★AlloyFramework★/视频/创建或打开播放测试场景")]
+        private static void CreateOrOpenPlaybackScene()
+        {
+            CreateOrOpenScene();
+        }
+
+        [MenuItem("★AlloyFramework★/视频/创建或打开播放测试场景", true)]
+        private static bool CanCreatePlaybackScene()
+        {
+            return CanCreateScene();
         }
 
         [MenuItem("★AlloyFramework★/视频/创建或打开首帧测试场景", true)]

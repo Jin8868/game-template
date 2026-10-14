@@ -17,7 +17,7 @@ namespace Game.UI
 
         private static Dictionary<string, UIDefinition> CreateDefinitions()
         {
-            var definitions = new Dictionary<string, UIDefinition>(3);
+            var definitions = new Dictionary<string, UIDefinition>(4);
             AddDefinitions0(definitions);
             return definitions;
         }
@@ -60,6 +60,21 @@ namespace Game.UI
                 new UIDefinitionBuilder<NavigationPopupUIView, NavigationPopupUIController>("NavigationPopupUI")
                     .Location("Prefabs/UI/NavigationUI/NavigationPopupUI")
                     .Layer(UILayer.POPUP)
+                    .Layout(UILayoutMode.Window)
+                    .Background(UIBackgroundMode.None)
+                    .Input(UIInputMode.Block)
+                    .Cache(UICacheMode.DestroyOnClose)
+                    .OpenMode(UIOpenMode.SingleRefresh)
+                    .Navigation(UINavigationMode.None)
+                    .PauseCovered(false)
+                    .Build());
+
+            // 注册 VideoPreviewUI 的静态界面定义。
+            definitions.Add(
+                "VideoPreviewUI",
+                new UIDefinitionBuilder<VideoPreviewUIView, VideoPreviewUIController>("VideoPreviewUI")
+                    .Location("Prefabs/UI/NavigationUI/VideoPreviewUI")
+                    .Layer(UILayer.WINDOW)
                     .Layout(UILayoutMode.Window)
                     .Background(UIBackgroundMode.None)
                     .Input(UIInputMode.Block)

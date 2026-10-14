@@ -14,7 +14,13 @@ namespace Game.UI
             m_audioScope = AudioManager.Instance.CreateScope("NavigationHomeUI");
             View.BtnOpenDetail.onClick.AddListener(OpenDetail);
             View.BtnOpenPopup.onClick.AddListener(OpenPopup);
+            View.BtnOpenVideo.onClick.AddListener(OpenVideo);
             View.AnimationEventReceived += OnAnimationEventReceived;
+        }
+
+        private void OpenVideo()
+        {
+            UIManager.Instance.Open(GameUI.VideoPreviewUI);
         }
 
         protected override void OnInitData(UIEmptyData data)
@@ -43,6 +49,7 @@ namespace Game.UI
             m_audioScope = null;
             View.BtnOpenDetail.onClick.RemoveListener(OpenDetail);
             View.BtnOpenPopup.onClick.RemoveListener(OpenPopup);
+            View.BtnOpenVideo.onClick.RemoveListener(OpenVideo);
             View.AnimationEventReceived -= OnAnimationEventReceived;
         }
 

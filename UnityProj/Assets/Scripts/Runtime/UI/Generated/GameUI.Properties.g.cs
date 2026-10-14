@@ -24,5 +24,11 @@ namespace Game.UI
         /// </summary>
         public static UIDefinition<NavigationPopupUIView, NavigationPopupUIController> NavigationPopupUI =>
             (UIDefinition<NavigationPopupUIView, NavigationPopupUIController>)m_definitions["NavigationPopupUI"];
+
+        /// <summary>
+        /// VideoPreviewUI 的静态界面定义。
+        /// </summary>
+        public static UIDefinition<VideoPreviewUIView, VideoPreviewUIController> VideoPreviewUI =>
+            (UIDefinition<VideoPreviewUIView, VideoPreviewUIController>)m_definitions["VideoPreviewUI"];
     }
 }

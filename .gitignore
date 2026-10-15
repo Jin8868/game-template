@@ -86,3 +86,13 @@ sysinfo.txt
 /UnityProj/Assets/Wwise/Documentation.meta
 /UnityProj/Assets/Wwise/**/*.pdb.meta
 /UnityProj/Assets/Wwise/**/*.mdb.meta
+
+# Locally prepared Pulse test media; keep scripts and collection settings tracked
+/UnityProj/Assets/Res/Video/**/*.pulse
+/UnityProj/Assets/Res/Video/**/*.pulse.meta
+
+# Local Wwise test authoring project; existing tracked edits stay local.
+/WwiseProj/WwiseAudio/
+
+# Local synthetic video test folder metadata.
+/UnityProj/Assets/Res/Video/Synthetic.meta

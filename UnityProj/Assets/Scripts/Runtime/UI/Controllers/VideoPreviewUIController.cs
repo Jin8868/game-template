@@ -3,13 +3,14 @@ using System.Threading;
 using AlloyFramework;
 using AlloyFramework.UI;
 using Cysharp.Threading.Tasks;
+using Game.Video;
 
 namespace Game.UI
 {
     /// <summary>管理视频预览界面的播放器关闭和资源释放。</summary>
     public sealed class VideoPreviewUIController : UIController<VideoPreviewUIView>
     {
-        private PulseVideoPlayer.UI.PulseVideoPlayer m_videoPlayer; // 预制体上实际用于播放的组件。
+        private GameVideoPlayer m_videoPlayer; // 预制体上封装资源和音轨的工程视频组件。
         private UniTask m_playerCloseTask; // 可重复等待的关闭任务，供关闭动画和销毁流程共享。
         private bool m_isClosingPlayer; // 本轮关闭已发起，避免重复提交资源释放请求。
 
@@ -17,9 +18,9 @@ namespace Game.UI
         protected override void OnCreate()
         {
             // 获取已有组件，不能通过 new 创建 MonoBehaviour。
-            m_videoPlayer = View.GetComponentInChildren<PulseVideoPlayer.UI.PulseVideoPlayer>(true);
+            m_videoPlayer = View.GetComponentInChildren<GameVideoPlayer>(true);
             if (m_videoPlayer == null)
-                throw new InvalidOperationException("VideoPreviewUI 预制体缺少 PulseVideoPlayer 组件。");
+                throw new InvalidOperationException("VideoPreviewUI 预制体缺少 GameVideoPlayer 组件。");
         }
 
         // 每次打开前调用，可以异步准备数据和资源。
@@ -118,7 +119,8 @@ namespace Game.UI
             if (m_videoPlayer == null) return;
 
             // 先解除视频绑定并取消未完成的打开，再禁用组件以移除按钮和滑条监听。
-            m_playerCloseTask = m_videoPlayer.CloseAsync().Preserve();
+            // 工程组件返回的关闭完成源已支持并发等待，不再额外包裹 Preserve。
+            m_playerCloseTask = m_videoPlayer.CloseAsync();
             m_videoPlayer.enabled = false;
         }
 

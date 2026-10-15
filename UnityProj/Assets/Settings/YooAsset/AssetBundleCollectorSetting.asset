@@ -51,19 +51,6 @@ MonoBehaviour:
         FilterRuleName: CollectAll
         AssetTags: 
         UserData: 
-    - GroupName: audio
-      GroupDesc: Audio resources
-      AssetTags: 
-      ActiveRuleName: EnableGroup
-      Collectors:
-      - CollectPath: Assets/Res/Audio
-        CollectorGUID: 421617068e6fa5443a7c5cb099582dd4
-        CollectorType: 0
-        AddressRuleName: AddressByResPath
-        PackRuleName: PackDirectory
-        FilterRuleName: CollectAll
-        AssetTags: 
-        UserData: 
     - GroupName: config
       GroupDesc: Generated config data
       AssetTags: 
@@ -142,19 +129,6 @@ MonoBehaviour:
         FilterRuleName: CollectAll
         AssetTags: 
         UserData: 
-    - GroupName: video
-      GroupDesc: VideoClip resources
-      AssetTags: 
-      ActiveRuleName: EnableGroup
-      Collectors:
-      - CollectPath: Assets/Res/Video
-        CollectorGUID: 292c8f51de9587e4b95253590fa88996
-        CollectorType: 0
-        AddressRuleName: AddressByResPath
-        PackRuleName: PackDirectory
-        FilterRuleName: CollectAll
-        AssetTags: 
-        UserData: 
     - GroupName: audioSettings
       GroupDesc: Wwise initialization settings
       AssetTags: ''
@@ -210,5 +184,27 @@ MonoBehaviour:
         AddressRuleName: AddressByResPath
         PackRuleName: PackRawFile
         FilterRuleName: CollectAll
+        AssetTags: ''
+        UserData: ''
+  - PackageName: VideoPackage
+    PackageDesc: Pulse raw video files
+    EnableAddressable: 1
+    SupportExtensionless: 1
+    LocationToLower: 0
+    IncludeAssetGUID: 0
+    AutoCollectShaders: 0
+    IgnoreRuleName: RawFileIgnoreRule
+    Groups:
+    - GroupName: pulseVideos
+      GroupDesc: Individually downloadable Pulse files
+      AssetTags: ''
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/Video
+        CollectorGUID: 292c8f51de9587e4b95253590fa88996
+        CollectorType: 0
+        AddressRuleName: AddressByResPath
+        PackRuleName: PackRawFile
+        FilterRuleName: CollectPulseVideo
         AssetTags: ''
         UserData: ''

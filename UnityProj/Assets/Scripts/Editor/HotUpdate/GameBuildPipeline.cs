@@ -104,7 +104,7 @@ namespace Game.Editor
         private static void GenerateMain(BuildTarget target, GameHotUpdateSettings settings)
         {
             // 顺序固定为代码、音频、默认资源、最终 Player。仅成功步骤才提交缓存记录。
-            BeginStep("1/4 主包代码和 AOT 基线", "检查输入、产物、内置目录和基线");
+            BeginStep("1/5 主包代码和 AOT 基线", "检查输入、产物、内置目录和基线");
             GameHotUpdatePreparation.Configure();
             string codeInput = GameBuildFingerprint.Code(true);
             BuildStepRecord code = LoadRecord("main-code");
@@ -154,14 +154,15 @@ namespace Game.Editor
             {
                 packages.Add(code);
             }
-            packages.Add(BuildPackage("AudioPackage", true, "2/4"));
-            packages.Add(BuildPackage("DefaultPackage", true, "3/4"));
+            packages.Add(BuildPackage("AudioPackage", true, "2/5"));
+            packages.Add(BuildPackage("VideoPackage", true, "3/5"));
+            packages.Add(BuildPackage("DefaultPackage", true, "4/5"));
 
             string playerDirectory = Path.Combine("BuildArtifacts/Players", target.ToString(),
                 settings.CodeMode.ToString());
             string playerPath = Path.Combine(playerDirectory, target == BuildTarget.Android ?
                 "game-template" + (EditorUserBuildSettings.buildAppBundle ? ".aab" : ".apk") : "game-template.exe");
-            BeginStep("4/4 Unity Player", "检查主包输入、完整产物和已确认基线");
+            BeginStep("5/5 Unity Player", "检查主包输入、完整产物和已确认基线");
             string playerInput = GameBuildFingerprint.Player();
             BuildStepRecord player = LoadRecord("player");
             string playerReason = GetRebuildReason(player, playerInput, null);
@@ -259,6 +260,7 @@ namespace Game.Editor
             BeginStep("补丁输入检查", "比较代码、音频、资源和已发布产物");
             var packages = new List<BuildStepRecord>();
             string input = GameBuildFingerprint.Code(true) + GameBuildFingerprint.Package("AudioPackage") +
+                GameBuildFingerprint.Package("VideoPackage") +
                 GameBuildFingerprint.Package("DefaultPackage") + identity.BaselineID;
             BuildStepRecord previous = LoadRecord("patch-release");
             if (IsReusable(previous, input, null) && previous.BaselineID == identity.BaselineID &&
@@ -268,7 +270,7 @@ namespace Game.Editor
                 return;
             }
             EndStep("完成", "补丁内容或发布状态变化，继续生成");
-            BeginStep("1/3 热更新代码", hybrid ? "检查 DLL 编译缓存及旧主包 API 兼容性" : "Default 模式");
+            BeginStep("1/4 热更新代码", hybrid ? "检查 DLL 编译缓存及旧主包 API 兼容性" : "Default 模式");
             if (hybrid)
             {
                 // 只编译目标平台代码，禁止 GenerateAll 或重新生成旧基线的 AOT 元数据。
@@ -325,9 +327,11 @@ namespace Game.Editor
             {
                 EndStep("跳过", "Default 模式只发布资源补丁");
             }
-            BuildStepRecord audio = BuildPackage("AudioPackage", false, "2/3");
-            BuildStepRecord resources = BuildPackage("DefaultPackage", false, "3/3");
+            BuildStepRecord audio = BuildPackage("AudioPackage", false, "2/4");
+            BuildStepRecord video = BuildPackage("VideoPackage", false, "3/4");
+            BuildStepRecord resources = BuildPackage("DefaultPackage", false, "4/4");
             packages.Add(audio);
+            packages.Add(video);
             packages.Add(resources);
             BeginStep("发布热更新补丁", "校验发布文件并更新服务器版本指针");
             string published = Publish(identity.BaselineID, releaseID, packages);

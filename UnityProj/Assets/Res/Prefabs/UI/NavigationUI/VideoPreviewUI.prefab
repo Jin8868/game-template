@@ -374,6 +374,7 @@ GameObject:
   - component: {fileID: 2531365713368315618}
   - component: {fileID: 6189032789550878883}
   - component: {fileID: 7977263708665124982}
+  - component: {fileID: 5427859118361027384}
   m_Layer: 0
   m_Name: PulseVideoPlayer
   m_TagString: Untagged
@@ -443,6 +444,22 @@ MonoBehaviour:
   m_openOnEnable: 0
   m_playWhenReady: 1
   m_preserveAspectRatio: 1
+  m_audioEventKey: ''
+  m_loopMode: 0
+  m_playCount: 1
+--- !u!114 &5427859118361027384
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3464580540664257065}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2db8d0c819e408b9849c9cc34577b66, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_packageName: VideoPackage
 --- !u!1 &3691317406901631545
 GameObject:
   m_ObjectHideFlags: 0
@@ -972,7 +989,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
-  m_FillAmount: 1
+  m_FillAmount: 0
   m_FillClockwise: 1
   m_FillOrigin: 2
   m_UseSpriteMesh: 0

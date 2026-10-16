@@ -26,13 +26,19 @@ namespace Game.Video
             }
             if (Path.IsPathRooted(location)) return LoadLocal(location);
 
-            // 先准备包，再保留独立快照；租约不能在启动原生解码后立即 using 释放。
+            // 先准备包，再借用原始文件；租约保持到原生解码和 GPU 退役完成。
             // 包初始化是共享状态；界面关闭只取消等待，不中断后续界面也要使用的包初始化。
-            await ResourceManager.Instance.EnsurePackageAsync(packageName, CancellationToken.None)
-                .AttachExternalCancellation(cancellationToken);
-            RawFileLease rawFile = await ResourceManager.Instance.LoadRawFileAsync(
-                location, packageName, cancellationToken);
-            return new VideoResourceLease(rawFile.FilePath, rawFile);
+            var trace = new VideoPlaybackTrace("YooAssets 视频");
+            try
+            {
+                await ResourceManager.Instance.EnsurePackageAsync(packageName, CancellationToken.None)
+                    .AttachExternalCancellation(cancellationToken);
+                RawFileLease rawFile = await ResourceManager.Instance.LoadRawFileAsync(
+                    location, packageName, cancellationToken);
+                trace.Complete();
+                return new VideoResourceLease(rawFile.FilePath, rawFile);
+            }
+            catch (Exception exception) { trace.Fail(exception); throw; }
         }
 
         private static VideoResourceLease LoadLocal(string filePath)
@@ -48,6 +54,7 @@ namespace Game.Video
                 Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(directory);
             string filePath = Path.Combine(directory, "video.pulse");
+            var trace = new VideoPlaybackTrace("CDN 视频");
             try
             {
                 // 文件直写磁盘，不把长视频整体载入托管内存。取消和失败均移除本次下载。
@@ -78,10 +85,12 @@ namespace Game.Video
                 // 校验 Pulse 元数据，避免把 CDN 错误页交给原生解码器。
                 await PulseMetadataLoader.ReadAsync(filePath, cancellationToken);
                 progress?.Report(1);
+                trace.Complete();
                 return new VideoResourceLease(filePath, ownedDirectory: directory);
             }
-            catch
+            catch (Exception exception)
             {
+                trace.Fail(exception);
                 if (Directory.Exists(directory)) Directory.Delete(directory, true);
                 throw;
             }

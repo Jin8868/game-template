@@ -21,6 +21,12 @@ namespace Game.UI
             m_videoPlayer = View.GetComponentInChildren<GameVideoPlayer>(true);
             if (m_videoPlayer == null)
                 throw new InvalidOperationException("VideoPreviewUI 预制体缺少 GameVideoPlayer 组件。");
+            View.BtnClose.onClick.AddListener(OnCloseBtnClick);
+        }
+
+        private void OnCloseBtnClick()
+        {
+            Close();
         }
 
         // 每次打开前调用，可以异步准备数据和资源。
@@ -59,6 +65,7 @@ namespace Game.UI
         // 打开动画执行完成后调用。
         protected override void OnEndOpenAnimation()
         {
+            // 使用播放器 Inspector 配置的业务地址，由资源包准备视频与音轨。
             m_videoPlayer.Play();
         }
 

@@ -22,14 +22,34 @@ namespace Game.UI
         public UnityEngine.UI.Slider SliderTime => m_sliderTime;
 
         [UnityEngine.SerializeField, AlloyFramework.UI.UIBindingReference]
+        private UnityEngine.UI.Button m_btnPause;
+
+        public UnityEngine.UI.Button BtnPause => m_btnPause;
+
+        [UnityEngine.SerializeField, AlloyFramework.UI.UIBindingReference]
+        private UnityEngine.UI.Button m_btnPlay;
+
+        public UnityEngine.UI.Button BtnPlay => m_btnPlay;
+
+        [UnityEngine.SerializeField, AlloyFramework.UI.UIBindingReference]
         private UnityEngine.UI.RawImage m_rawVideo;
 
         public UnityEngine.UI.RawImage RawVideo => m_rawVideo;
 
         [UnityEngine.SerializeField, AlloyFramework.UI.UIBindingReference]
+        private UnityEngine.UI.Text m_txtSubtitles;
+
+        public UnityEngine.UI.Text TxtSubtitles => m_txtSubtitles;
+
+        [UnityEngine.SerializeField, AlloyFramework.UI.UIBindingReference]
         private UnityEngine.UI.Text m_txtTime;
 
         public UnityEngine.UI.Text TxtTime => m_txtTime;
+
+        [UnityEngine.SerializeField, AlloyFramework.UI.UIBindingReference]
+        private UnityEngine.UI.Button m_btnClose;
+
+        public UnityEngine.UI.Button BtnClose => m_btnClose;
         // </alloy-generated-bindings>
 
         // <alloy-generated-animation-keys>

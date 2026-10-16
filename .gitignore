@@ -96,3 +96,7 @@ sysinfo.txt
 
 # Local synthetic video test folder metadata.
 /UnityProj/Assets/Res/Video/Synthetic.meta
+
+# Locally prepared subtitle fixtures.
+/UnityProj/Assets/Res/Video/Synthetic/*.srt
+/UnityProj/Assets/Res/Video/Synthetic/*.srt.meta

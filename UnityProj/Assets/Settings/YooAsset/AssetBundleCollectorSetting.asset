@@ -129,6 +129,19 @@ MonoBehaviour:
         FilterRuleName: CollectAll
         AssetTags: 
         UserData: 
+    - GroupName: videoSubtitles
+      GroupDesc: External SRT subtitle text assets
+      AssetTags: ''
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/Video
+        CollectorGUID: 292c8f51de9587e4b95253590fa88996
+        CollectorType: 0
+        AddressRuleName: AddressByResPath
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectPulseSubtitle
+        AssetTags: ''
+        UserData: ''
     - GroupName: audioSettings
       GroupDesc: Wwise initialization settings
       AssetTags: ''

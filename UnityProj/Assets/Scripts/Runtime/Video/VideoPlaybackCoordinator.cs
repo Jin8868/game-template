@@ -8,7 +8,8 @@ using UnityEngine;
 namespace Game.Video
 {
     /// <summary>宿主的视频资源、Wwise 音轨、循环与生命周期协调器。</summary>
-    public sealed class VideoPlaybackCoordinator : IPulsePlaybackDriver, IDisposable
+    public sealed class VideoPlaybackCoordinator : IPulsePlaybackDriver, IPulseSubtitlePlaybackDriver,
+        IPulsePlaybackControlDriver, IDisposable
     {
         private readonly PulseVideoPlayer.UI.PulseVideoPlayer m_player; // 负责显示与原生视频控制的组件。
         private readonly string m_packageName; // YooAssets 视频原始文件包。
@@ -18,6 +19,7 @@ namespace Game.Video
         private bool m_isDisposed; // 销毁后不再接受新的播放。
         private string m_lastLocation; // 最近一次业务视频地址，不保存临时下载路径。
         private string m_lastAudioKey; // 最近一次音轨事件。
+        private string m_lastSubtitleLocation; // 最近一次外置字幕地址，无字幕请求会清空。
         private EPulseLoopMode m_lastLoopMode; // 最近一次循环策略。
         private int m_lastPlayCount = 1; // 最近一次指定播放次数。
 
@@ -48,40 +50,106 @@ namespace Game.Video
         /// <exception cref="ArgumentOutOfRangeException">循环策略或次数无效。</exception>
         /// <exception cref="ObjectDisposedException">协调器已销毁。</exception>
         /// <exception cref="InvalidOperationException">音频未就绪或不支持时间轴控制。</exception>
-        public async UniTask PlayAsync(string videoLocation, string audioEventKey, EPulseLoopMode loopMode,
+        public UniTask PlayAsync(string videoLocation, string audioEventKey, EPulseLoopMode loopMode,
             int playCount, CancellationToken cancellationToken)
         {
-            if (m_isDisposed) throw new ObjectDisposedException(nameof(VideoPlaybackCoordinator));
-            if (string.IsNullOrWhiteSpace(videoLocation)) throw new ArgumentException("视频地址不能为空。");
-            if (loopMode != EPulseLoopMode.Once && loopMode != EPulseLoopMode.Infinite &&
-                loopMode != EPulseLoopMode.Count)
-                throw new ArgumentOutOfRangeException(nameof(loopMode));
-            if (loopMode == EPulseLoopMode.Count && playCount < 1)
-                throw new ArgumentOutOfRangeException(nameof(playCount));
-            cancellationToken.ThrowIfCancellationRequested();
+            return PlayCoreAsync(videoLocation, null, audioEventKey, loopMode, playCount, cancellationToken);
+        }
 
-            UniTask retirement = CloseAsync();
-            int generation = ++m_generation;
-            await retirement;
-            cancellationToken.ThrowIfCancellationRequested();
-            if (generation != m_generation || m_isDisposed || m_player == null || !m_player.isActiveAndEnabled)
-                throw new OperationCanceledException(cancellationToken);
+        /// <summary>准备视频、外置 SRT 和可选 Wwise 音轨，并开始播放。</summary>
+        /// <param name="videoLocation">YooAssets 视频地址、本地文件或 CDN URL。</param>
+        /// <param name="audioEventKey">Wwise 音轨事件名，空值表示无音轨。</param>
+        /// <param name="subtitleLocation">DefaultPackage 字幕地址、本地 SRT 文件或 CDN URL。</param>
+        /// <param name="loopMode">循环模式。</param>
+        /// <param name="playCount">指定总次数，包含第一次播放。</param>
+        /// <param name="cancellationToken">本次播放生命周期令牌。</param>
+        /// <returns>音画已启动的任务，不等待播放结束。</returns>
+        /// <exception cref="ArgumentException">视频或字幕地址为空。</exception>
+        /// <exception cref="ArgumentOutOfRangeException">循环模式或次数无效。</exception>
+        /// <exception cref="FormatException">字幕格式无效。</exception>
+        /// <exception cref="ObjectDisposedException">协调器已经销毁。</exception>
+        public UniTask PlayAsync(string videoLocation,
+            string audioEventKey, string subtitleLocation,
+            EPulseLoopMode loopMode, int playCount, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(subtitleLocation))
+                throw new ArgumentException("字幕地址不能为空。", nameof(subtitleLocation));
+            return PlayCoreAsync(
+                videoLocation, subtitleLocation, audioEventKey, loopMode, playCount, cancellationToken);
+        }
 
-            var request = new Request(this, cancellationToken, audioEventKey, loopMode,
-                loopMode == EPulseLoopMode.Once ? 1 : playCount);
-            m_request = request;
-            m_lastLocation = videoLocation;
-            m_lastAudioKey = audioEventKey;
-            m_lastLoopMode = loopMode;
-            m_lastPlayCount = playCount;
+        /// <summary>先定位目标画面，再从同一时间启动音轨，字幕时间轴随视频时钟更新。</summary>
+        /// <param name="videoLocation">视频资源地址。</param>
+        /// <param name="audioEventKey">可选音轨事件。</param>
+        /// <param name="subtitleLocation">可选字幕地址。</param>
+        /// <param name="startTimeSeconds">首次起点秒数，后续循环从零开始。</param>
+        /// <param name="loopMode">循环策略。</param>
+        /// <param name="playCount">指定总次数。</param>
+        /// <param name="cancellationToken">播放生命周期令牌。</param>
+        /// <returns>目标画面和音轨已准备并启动的任务。</returns>
+        /// <exception cref="ArgumentOutOfRangeException">起点或循环设置无效。</exception>
+        /// <exception cref="ArgumentException">视频地址为空。</exception>
+        /// <exception cref="ObjectDisposedException">协调器已经销毁。</exception>
+        public UniTask PlayAsync(string videoLocation, string audioEventKey, string subtitleLocation,
+            double startTimeSeconds, EPulseLoopMode loopMode, int playCount, CancellationToken cancellationToken)
+        {
+            return PlayCoreAsync(videoLocation, subtitleLocation, audioEventKey,
+                loopMode, playCount, cancellationToken, startTimeSeconds);
+        }
+
+        private UniTask PlayCoreAsync(string videoLocation, string subtitleLocation, string audioEventKey,
+            EPulseLoopMode loopMode, int playCount, CancellationToken cancellationToken)
+        {
+            return PlayCoreAsync(videoLocation, subtitleLocation, audioEventKey,
+                loopMode, playCount, cancellationToken, 0);
+        }
+
+        private async UniTask PlayCoreAsync(string videoLocation, string subtitleLocation, string audioEventKey,
+            EPulseLoopMode loopMode, int playCount, CancellationToken cancellationToken, double startTimeSeconds)
+        {
+            var trace = new VideoPlaybackTrace("播放准备");
+            Request request = null;
             try
             {
+                if (m_isDisposed) throw new ObjectDisposedException(nameof(VideoPlaybackCoordinator));
+                if (string.IsNullOrWhiteSpace(videoLocation)) throw new ArgumentException("视频地址不能为空。");
+                if (double.IsNaN(startTimeSeconds) || double.IsInfinity(startTimeSeconds) || startTimeSeconds < 0)
+                    throw new ArgumentOutOfRangeException(nameof(startTimeSeconds));
+                if (loopMode != EPulseLoopMode.Once && loopMode != EPulseLoopMode.Infinite &&
+                    loopMode != EPulseLoopMode.Count)
+                    throw new ArgumentOutOfRangeException(nameof(loopMode));
+                if (loopMode == EPulseLoopMode.Count && playCount < 1)
+                    throw new ArgumentOutOfRangeException(nameof(playCount));
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // 旧会话完全退役后才加载新资源，计时包含其异步清理等待。
+                UniTask retirement = CloseAsync();
+                int generation = ++m_generation;
+                await retirement;
+                cancellationToken.ThrowIfCancellationRequested();
+                if (generation != m_generation || m_isDisposed || m_player == null || !m_player.isActiveAndEnabled)
+                    throw new OperationCanceledException(cancellationToken);
+
+                request = new Request(this, cancellationToken, audioEventKey, loopMode,
+                    loopMode == EPulseLoopMode.Once ? 1 : playCount);
+                m_request = request;
+                m_lastLocation = videoLocation;
+                m_lastAudioKey = audioEventKey;
+                m_lastSubtitleLocation = subtitleLocation;
+                m_lastLoopMode = loopMode;
+                m_lastPlayCount = playCount;
                 m_player.ShowPreparing();
+
                 request.Video = await VideoResourceLoader.LoadAsync(
                     videoLocation, m_packageName, request, request.Token);
                 EnsureCurrent(request);
                 // 下载占总准备进度的前 60%，其余阶段完成后更新，不使用计时模拟进度。
                 m_player.SetLoadingProgress(0.6f);
+                if (!string.IsNullOrWhiteSpace(subtitleLocation))
+                {
+                    request.Subtitles = await VideoSubtitleLoader.LoadAsync(subtitleLocation, request.Token);
+                    EnsureCurrent(request);
+                }
                 if (!string.IsNullOrWhiteSpace(audioEventKey))
                 {
                     if (!AudioManager.Instance.SupportsTimeline)
@@ -91,8 +159,11 @@ namespace Game.Video
                     EnsureCurrent(request);
                 }
                 m_player.SetLoadingProgress(0.8f);
-                await m_player.PrepareVideoAsync(request.Video.FilePath, request.Token);
+
+                await m_player.PrepareVideoAsync(request.Video.FilePath, startTimeSeconds, request.Token);
                 EnsureCurrent(request);
+                // 准备首帧会解除旧会话，字幕应在该阶段完成后再绑定。
+                m_player.SetSubtitleTrack(request.Subtitles);
                 m_player.SetLoadingProgress(0.95f);
                 if (request.AudioScope != null) ToMilliseconds(m_player.DurationSeconds);
                 await StartAudioAsync(request);
@@ -102,17 +173,19 @@ namespace Game.Video
                 request.Busy = false;
                 m_player.StartPreparedVideo();
                 EnsureCurrent(request);
+                trace.Complete();
             }
             catch (Exception exception)
             {
-                if (ReferenceEquals(m_request, request))
+                trace.Fail(exception);
+                if (request != null && ReferenceEquals(m_request, request))
                 {
                     CloseAsync().Forget(LogFailure);
                     if (!(exception is OperationCanceledException)) m_player.ReportPlaybackFailure(exception);
                 }
                 throw;
             }
-            finally { request.Prepared.TrySetResult(); }
+            finally { request?.Prepared.TrySetResult(); }
         }
 
         /// <summary>暂停当前音画。</summary>
@@ -122,8 +195,14 @@ namespace Game.Video
             Request request = RequireActive();
             if (request.Busy) throw new InvalidOperationException("请等待音画准备或跳转完成。");
             if (m_player.State != EPulsePlayerState.Playing) return;
-            SetAudioPaused(request, true);
-            m_player.PauseVideo();
+            var trace = new VideoPlaybackTrace("暂停");
+            try
+            {
+                SetAudioPaused(request, true);
+                m_player.PauseVideo();
+                trace.Complete();
+            }
+            catch (Exception exception) { trace.Fail(exception); throw; }
         }
 
         /// <summary>从当前暂停位置恢复音画。</summary>
@@ -133,18 +212,33 @@ namespace Game.Video
             Request request = RequireActive();
             if (request.Busy) throw new InvalidOperationException("请等待音画准备或跳转完成。");
             if (m_player.State != EPulsePlayerState.Paused) return;
-            SetAudioPaused(request, false);
-            m_player.ResumeVideo();
+            var trace = new VideoPlaybackTrace("恢复");
+            try
+            {
+                SetAudioPaused(request, false);
+                m_player.ResumeVideo();
+                trace.Complete();
+            }
+            catch (Exception exception) { trace.Fail(exception); throw; }
         }
 
         /// <summary>重新提交最近的业务地址和循环配置，首次播放使用组件 Inspector 配置。</summary>
         public void Replay()
         {
+            ReplayAsync(default).Forget(LogFailure);
+        }
+
+        /// <summary>使用最近的地址、音轨、字幕及循环配置从零重播，重置已播放轮次。</summary>
+        /// <param name="cancellationToken">新请求的播放生命周期令牌。</param>
+        /// <returns>新一轮音画已经启动的任务。</returns>
+        /// <exception cref="ObjectDisposedException">协调器已经销毁。</exception>
+        public UniTask ReplayAsync(CancellationToken cancellationToken)
+        {
             string location = m_lastLocation ?? m_player.ConfiguredVideoLocation;
             string audioKey = m_lastLocation == null ? m_player.AudioEventKey : m_lastAudioKey;
             EPulseLoopMode mode = m_lastLocation == null ? m_player.LoopMode : m_lastLoopMode;
             int count = m_lastLocation == null ? m_player.PlayCount : m_lastPlayCount;
-            PlayAsync(location, audioKey, mode, count, default).Forget(LogFailure);
+            return PlayCoreAsync(location, m_lastSubtitleLocation, audioKey, mode, count, cancellationToken);
         }
 
         /// <summary>先冻结音画，定位视频，再将音轨定位到同一时刻并恢复原来的播放状态。</summary>
@@ -164,6 +258,7 @@ namespace Game.Video
             request.ResumeAfterSeek = resume;
             request.Seeking = true;
             request.Busy = true;
+            var trace = new VideoPlaybackTrace("跳转");
             using (var linked = CancellationTokenSource.CreateLinkedTokenSource(request.Token, cancellationToken))
             {
                 try
@@ -176,7 +271,10 @@ namespace Game.Video
                     if (serial != request.SeekGeneration) throw new OperationCanceledException(linked.Token);
                     if (request.AudioScope != null)
                     {
-                        if (request.PlayID == 0 || request.AudioEnded) await StartAudioAsync(request);
+                        if (request.PlayID == 0 || request.AudioEnded)
+                        {
+                            await StartAudioAsync(request);
+                        }
                         EnsureCurrent(request);
                         // 只有新启动的音轨才需要再次暂停，旧音轨已在定位前暂停。
                         SetAudioPaused(request, true);
@@ -187,9 +285,11 @@ namespace Game.Video
                     request.Busy = false;
                     request.Seeking = false;
                     if (resume) m_player.ResumeVideo();
+                    trace.Complete();
                 }
                 catch (Exception exception)
                 {
+                    trace.Fail(exception);
                     // 被更新的 Seek 替代时保留新请求；其他错误停止整个会话，避免只播其中一路。
                     if (ReferenceEquals(m_request, request) && serial == request.SeekGeneration)
                     {
@@ -221,11 +321,17 @@ namespace Game.Video
             // 完成源支持多个挂起的等待者；Preserve 仅缓存结果，不能并发等待同一个状态机。
             var completion = new UniTaskCompletionSource();
             m_retirement = completion.Task;
+            request.CloseTrace = new VideoPlaybackTrace("关闭");
             try
             {
                 request.Cancellation.Cancel();
                 if (request.PlayID != 0) AudioManager.Instance.StopAudio(request.PlayID);
                 request.AudioScope?.Dispose();
+            }
+            catch (Exception exception)
+            {
+                request.CloseTrace.Fail(exception);
+                throw;
             }
             finally
             {
@@ -294,6 +400,7 @@ namespace Game.Video
 
         private async UniTask RestartLoopAsync(Request request)
         {
+            var trace = new VideoPlaybackTrace("循环重播");
             try
             {
                 await m_player.SeekVideoAsync(0, request.Token);
@@ -302,9 +409,11 @@ namespace Game.Video
                 EnsureCurrent(request);
                 request.Busy = false;
                 m_player.ResumeVideo();
+                trace.Complete();
             }
             catch (Exception exception)
             {
+                trace.Fail(exception);
                 if (ReferenceEquals(m_request, request) && !(exception is OperationCanceledException)) Fail(exception);
                 throw;
             }
@@ -314,7 +423,12 @@ namespace Game.Video
         {
             if (request.AudioScope == null) return;
             request.PlayID = await AudioManager.Instance.PlayAudioAsync(request.AudioKey,
-                new AudioPlayOptions { Scope = request.AudioScope, ReadinessMode = EAudioReadinessMode.RequireReady },
+                new AudioPlayOptions
+                {
+                    Scope = request.AudioScope,
+                    ReadinessMode = EAudioReadinessMode.RequireReady,
+                    StartTimeMs = ToMilliseconds(m_player.GetPlayTimeMs() / 1000d)
+                },
                 request.Token);
             request.AudioEnded = false;
             request.AudioPaused = false;
@@ -331,16 +445,20 @@ namespace Game.Video
                     await request.Prepared.Task;
                     await videoClosed;
                     request.Video?.Dispose();
+                    request.Subtitles = null;
                 }
                 finally { request.Cancellation.Dispose(); }
+                request.CloseTrace.Complete();
                 completion.TrySetResult();
             }
             catch (OperationCanceledException exception)
             {
+                request.CloseTrace.Fail(exception);
                 completion.TrySetCanceled(exception.CancellationToken);
             }
             catch (Exception exception)
             {
+                request.CloseTrace.Fail(exception);
                 completion.TrySetException(exception);
             }
         }
@@ -409,6 +527,8 @@ namespace Game.Video
             internal CancellationToken Token { get; }
             internal UniTaskCompletionSource Prepared { get; } = new UniTaskCompletionSource();
             internal VideoResourceLease Video { get; set; }
+            internal PulseSubtitleTrack Subtitles { get; set; }
+            internal VideoPlaybackTrace CloseTrace { get; set; }
             internal AudioScope AudioScope { get; set; }
             internal string AudioKey { get; }
             internal EPulseLoopMode LoopMode { get; }

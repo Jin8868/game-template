@@ -10,6 +10,9 @@ namespace Game.UI
     /// <summary>管理视频预览界面的播放器关闭和资源释放。</summary>
     public sealed class VideoPreviewUIController : UIController<VideoPreviewUIView>
     {
+        private const string VIDEOLOCATION = "Video/Synthetic/Sintel.2010.1080p"; // VideoPackage 中的视频资源地址。
+        private const string AUDIOEVENTKEY = "Play_Sintel"; // Wwise 中为此视频制作的专用音轨事件。
+        private const string SUBTITLELOCATION = "Video/Synthetic/Sintel.2010.1080p.en"; // 本地联调英文字幕地址。
         private GameVideoPlayer m_videoPlayer; // 预制体上封装资源和音轨的工程视频组件。
         private UniTask m_playerCloseTask; // 可重复等待的关闭任务，供关闭动画和销毁流程共享。
         private bool m_isClosingPlayer; // 本轮关闭已发起，避免重复提交资源释放请求。
@@ -65,8 +68,8 @@ namespace Game.UI
         // 打开动画执行完成后调用。
         protected override void OnEndOpenAnimation()
         {
-            // 使用播放器 Inspector 配置的业务地址，由资源包准备视频与音轨。
-            m_videoPlayer.Play();
+            // 资源地址由 VideoPackage 解析；音轨使用事件名，由 AudioPackage 准备 Wwise 依赖。
+            m_videoPlayer.Play(VIDEOLOCATION, AUDIOEVENTKEY, SUBTITLELOCATION, startTimeSeconds: 4.0);
         }
 
         // 界面完成打开并可以交互后调用。

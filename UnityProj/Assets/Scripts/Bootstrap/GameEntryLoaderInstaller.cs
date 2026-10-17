@@ -10,10 +10,6 @@ namespace Game
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         private static void Install()
         {
-#if UNITY_EDITOR
-            // 独立测试场景跳过业务安装，避免日志面板、热更和音频接管测试环境。
-            if (UnityEditor.SessionState.GetBool("AlloyFramework.SkipAutomaticStartup", false)) return;
-#endif
             // 最先安装 AOT 日志面板，记录后续入口与资源初始化的错误。
             GameLogViewerInstaller.Install();
 

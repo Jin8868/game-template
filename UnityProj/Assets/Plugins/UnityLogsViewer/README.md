@@ -1,7 +1,7 @@
 # Unity Logs Viewer
 
 从本机 HZJFrameWork 项目复制 Reporter、ReporterMessageReceiver、MultiKeyDictionary 及 Images 资源。
-来源项目路径：D:/WorkSpeace/UnityProject/HZJFrameWork/Assets/HZJFrameWork。
+来源项目路径：../../HZJFrameWork/Assets/HZJFrameWork（相对于 Unity 工程根目录）。
 原插件：https://github.com/aliessmael/Unity-Logs-Viewer。
 
 此本地版本曾被旧项目改为 ReporterRoot 窗口。本次移除了该依赖，恢复画圈唤出及跨场景保留，

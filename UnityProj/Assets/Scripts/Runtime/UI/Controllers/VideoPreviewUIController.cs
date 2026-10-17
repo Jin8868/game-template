@@ -10,9 +10,9 @@ namespace Game.UI
     /// <summary>管理视频预览界面的播放器关闭和资源释放。</summary>
     public sealed class VideoPreviewUIController : UIController<VideoPreviewUIView>
     {
-        private const string VIDEOLOCATION = "Video/Synthetic/Sintel.2010.1080p"; // VideoPackage 中的视频资源地址。
-        private const string AUDIOEVENTKEY = "Play_Sintel"; // Wwise 中为此视频制作的专用音轨事件。
-        private const string SUBTITLELOCATION = "Video/Synthetic/Sintel.2010.1080p.en"; // 本地联调英文字幕地址。
+        private const string VIDEOLOCATION = "Video/Synthetic/all_in_one"; // VideoPackage 中的视频资源地址。
+        private const string AUDIOEVENTKEY = "Play_Video_AllInOne"; // Wwise 中为此视频制作的专用音轨事件。
+        private const string SUBTITLELOCATION = ""; // 本地联调英文字幕地址。Video/Synthetic/Sintel.2010.1080p.en
         private GameVideoPlayer m_videoPlayer; // 预制体上封装资源和音轨的工程视频组件。
         private UniTask m_playerCloseTask; // 可重复等待的关闭任务，供关闭动画和销毁流程共享。
         private bool m_isClosingPlayer; // 本轮关闭已发起，避免重复提交资源释放请求。

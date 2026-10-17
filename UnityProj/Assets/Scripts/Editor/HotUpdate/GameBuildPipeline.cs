@@ -14,11 +14,11 @@ using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace Game.Editor
 {
-    /// <summary>按输入及产物指纹执行主包构建、补丁生成和本机发布。</summary>
+    /// <summary>完整构建主包、增量生成补丁并发布到本机目录。</summary>
     public static class GameBuildPipeline
     {
-        private const string BASELINEROOT = "BuildArtifacts/AOTBaselines";
-        private const string CODEROOT = "Assets/Res/HotUpdateCode";
+        private const string BASELINEROOT = "BuildArtifacts/AOTBaselines"; // 主包 AOT 基线归档目录。
+        private const string CODEROOT = "Assets/Res/HotUpdateCode"; // 热更新代码资源目录。
         private static bool m_running; // 防止同一编辑器并发执行构建。
         private static string m_currentStep; // 当前执行步骤，用于定位失败阶段。
         private static Stopwatch m_stepTimer; // 当前步骤的实际耗时。
@@ -103,137 +103,65 @@ namespace Game.Editor
 
         private static void GenerateMain(BuildTarget target, GameHotUpdateSettings settings)
         {
-            // 顺序固定为代码、音频、默认资源、最终 Player。仅成功步骤才提交缓存记录。
-            BeginStep("1/5 主包代码和 AOT 基线", "检查输入、产物、内置目录和基线");
+            // 完整出包始终重新准备代码和基线，不读取旧主包的构建缓存。
+            BeginStep("1/5 主包代码和 AOT 基线", "重新生成主包代码资源和 AOT 基线");
             GameHotUpdatePreparation.Configure();
-            string codeInput = GameBuildFingerprint.Code(true);
-            BuildStepRecord code = LoadRecord("main-code");
-            string codeReason = GetRebuildReason(code, codeInput, settings.CodeMode == EGameCodeMode.HybridCLR ?
-                "CodePackage" : null);
-            bool reuseCode = codeReason == null;
-            if (reuseCode)
-            {
-                HotUpdatePlayerIdentity current = GameHotUpdatePreparation.ReadIdentity(target);
-                string baselineDirectory = Path.Combine(BASELINEROOT, target.ToString(), current.BaselineID);
-                string generatedPath = Path.Combine(baselineDirectory, "generated-cpp.txt");
-                reuseCode = current.BaselineID == code.BaselineID &&
-                    File.Exists(Path.Combine(baselineDirectory, "code-input.txt")) &&
-                    File.ReadAllText(Path.Combine(baselineDirectory, "code-input.txt")) == codeInput &&
-                    File.Exists(generatedPath) && File.ReadAllText(generatedPath) ==
-                    GameBuildFingerprint.DirectoryHash(SettingsUtil.GeneratedCppDir) &&
-                    !File.Exists(Path.Combine(baselineDirectory, "failed.txt"));
-                if (!reuseCode)
-                {
-                    codeReason = "准备记录、当前主包身份或生成的原生代码与基线不一致";
-                }
-            }
-            if (!reuseCode)
-            {
-                Debug.Log($"[Build][重新生成] 主包代码：{codeReason}");
-                GameHotUpdatePreparation.PrepareMainPackage();
-                HotUpdatePlayerIdentity prepared = GameHotUpdatePreparation.ReadIdentity(target);
-                string output = settings.CodeMode == EGameCodeMode.HybridCLR ?
-                    GetPackageDirectory("CodePackage", prepared.BaselineID) :
-                    Path.Combine(BASELINEROOT, target.ToString(), prepared.BaselineID, "code-proof");
-                if (settings.CodeMode == EGameCodeMode.Default)
-                {
-                    Directory.CreateDirectory(output);
-                    File.Copy(Path.Combine(BASELINEROOT, target.ToString(), prepared.BaselineID, "configuration.txt"),
-                        Path.Combine(output, "configuration.txt"), false);
-                }
-                code = SaveRecord("main-code", GameBuildFingerprint.Code(true), output, prepared.BaselineID,
-                    prepared.BaselineID, settings.CodeMode == EGameCodeMode.HybridCLR ? "CodePackage" : null);
-                EndStep("完成", $"基线={prepared.BaselineID}，输出={Path.GetFullPath(output)}");
-            }
-            else
-            {
-                EndStep("跳过", $"输入及产物未变化，基线={code.BaselineID}，输出={Path.GetFullPath(code.Directory)}");
-            }
+            GameHotUpdatePreparation.PrepareMainPackage();
+            HotUpdatePlayerIdentity identity = GameHotUpdatePreparation.ReadIdentity(target);
             var packages = new List<BuildStepRecord>();
             if (settings.CodeMode == EGameCodeMode.HybridCLR)
             {
-                packages.Add(code);
+                packages.Add(new BuildStepRecord
+                {
+                    Directory = GetPackageDirectory("CodePackage", identity.BaselineID),
+                    Version = identity.BaselineID,
+                    BaselineID = identity.BaselineID
+                });
             }
+            EndStep("完成", $"基线={identity.BaselineID}");
+
+            // 重新构建全部资源包并复制内置资源，不计算用于判断复用的输入及产物指纹。
             packages.Add(BuildPackage("AudioPackage", true, "2/5"));
             packages.Add(BuildPackage("VideoPackage", true, "3/5"));
             packages.Add(BuildPackage("DefaultPackage", true, "4/5"));
 
+            BeginStep("5/5 Unity Player", "重新构建完整安装包");
             string playerDirectory = Path.Combine("BuildArtifacts/Players", target.ToString(),
                 settings.CodeMode.ToString());
             string playerPath = Path.Combine(playerDirectory, target == BuildTarget.Android ?
                 "game-template" + (EditorUserBuildSettings.buildAppBundle ? ".aab" : ".apk") : "game-template.exe");
-            BeginStep("5/5 Unity Player", "检查主包输入、完整产物和已确认基线");
-            string playerInput = GameBuildFingerprint.Player();
-            BuildStepRecord player = LoadRecord("player");
-            string playerReason = GetRebuildReason(player, playerInput, null);
-            if (playerReason == null && !File.Exists(playerPath))
+            var scenes = new List<string>();
+            foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes)
             {
-                playerReason = "Player 可执行文件缺失";
-            }
-            if (playerReason == null &&
-                !File.Exists(Path.Combine(BASELINEROOT, target.ToString(), code.BaselineID, "confirmed.txt")))
-            {
-                playerReason = "本次主包基线尚未通过最终 AOT 校验";
-            }
-            if (playerReason != null)
-            {
-                Debug.Log($"[Build][重新生成] Unity Player：{playerReason}");
-                Directory.CreateDirectory(playerDirectory);
-                var scenes = new List<string>();
-                foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes)
+                if (scene.enabled)
                 {
-                    if (scene.enabled)
-                    {
-                        scenes.Add(scene.path);
-                    }
+                    scenes.Add(scene.path);
                 }
-                if (scenes.Count == 0)
-                {
-                    throw new BuildFailedException("Build Settings 没有启用的启动场景。");
-                }
-                BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
-                {
-                    scenes = scenes.ToArray(),
-                    target = target,
-                    locationPathName = playerPath,
-                    options = GetPlayerOptions()
-                });
-                if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
-                {
-                    throw new BuildFailedException($"Player 构建失败：{report.summary.result}");
-                }
-                SaveRecord("player", GameBuildFingerprint.Player(), playerDirectory, null, code.BaselineID, null);
-                EndStep("完成", $"输出={Path.GetFullPath(playerPath)}");
             }
-            else
+            if (scenes.Count == 0)
             {
-                EndStep("跳过", $"输入及完整产物未变化，输出={Path.GetFullPath(playerPath)}");
+                throw new BuildFailedException("Build Settings 没有启用的启动场景。");
             }
-            // 完整主包成功并确认基线后才发布初始版本，失败构建不能更新远端指针。
-            BeginStep("发布主包资源", "校验发布文件并更新服务器版本指针");
-            string releaseInput = code.BaselineID;
-            foreach (BuildStepRecord package in packages)
+
+            // 始终调用 Unity 构建流程，最终 AOT 校验仍由构建回调确认新基线。
+            Directory.CreateDirectory(playerDirectory);
+            BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
-                releaseInput += package.OutputHash;
-            }
-            BuildStepRecord previousRelease = LoadRecord("main-release");
-            if (!IsReusable(previousRelease, releaseInput, null))
+                scenes = scenes.ToArray(),
+                target = target,
+                locationPathName = playerPath,
+                options = GetPlayerOptions()
+            });
+            if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
             {
-                string releaseID = code.BaselineID;
-                string existing = Path.Combine("BuildArtifacts/LocalCDN", target.ToString(), settings.Channel,
-                    code.BaselineID, "releases", releaseID);
-                if (Directory.Exists(existing))
-                {
-                    releaseID = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
-                }
-                string published = Publish(code.BaselineID, releaseID, packages);
-                SaveRecord("main-release", releaseInput, published, releaseID, code.BaselineID, null);
-                EndStep("完成", $"版本={releaseID}，输出={Path.GetFullPath(published)}");
+                throw new BuildFailedException($"Player 构建失败：{report.summary.result}");
             }
-            else
-            {
-                EndStep("跳过", "发布内容未变化，保留服务器当前发布指针");
-            }
+            EndStep("完成", $"输出={Path.GetFullPath(playerPath)}");
+
+            // 新主包成功后发布本次全部资源，不再比较旧发布记录。
+            BeginStep("发布主包资源", "复制本次构建资源并更新服务器版本指针");
+            string published = Publish(identity.BaselineID, identity.BaselineID, packages);
+            EndStep("完成", $"版本={identity.BaselineID}，输出={Path.GetFullPath(published)}");
             Debug.Log($"[Build] 一键完整出包完成：{Path.GetFullPath(playerPath)}");
             EditorUtility.RevealInFinder(Path.GetFullPath(playerPath));
         }
@@ -342,29 +270,30 @@ namespace Game.Editor
 
         private static BuildStepRecord BuildPackage(string packageName, bool buildin, string phase)
         {
-            BeginStep($"{phase} {packageName}", buildin ? "检查资源输入、产物和内置目录" : "检查资源输入和产物");
+            // 完整出包直接生成新版本，补丁流程才比较输入并决定是否复用。
+            if (buildin)
+            {
+                BeginStep($"{phase} {packageName}", "重新构建资源包并复制内置资源");
+                string version = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
+                string directory = GamePackageBuildService.Build(packageName, version, true);
+                EndStep("完成", $"版本={version}，输出={Path.GetFullPath(directory)}");
+                return new BuildStepRecord { Directory = directory, Version = version };
+            }
+
+            BeginStep($"{phase} {packageName}", "检查补丁资源输入和产物");
             string input = GameBuildFingerprint.Package(packageName);
-            string key = (buildin ? "main-" : "patch-") + packageName;
+            string key = "patch-" + packageName;
             BuildStepRecord record = LoadRecord(key);
-            string reason = GetRebuildReason(record, input, buildin ? packageName : null);
+            string reason = GetRebuildReason(record, input, null);
             if (reason != null)
             {
-                // 第一次补丁可直接复用主包资源输出；已发布资源始终从不可变版本目录复制。
-                if (!buildin)
-                {
-                    record = LoadRecord("main-" + packageName);
-                }
-                reason = GetRebuildReason(record, input, buildin ? packageName : null);
-                if (reason != null)
-                {
-                    string version = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
-                    Debug.Log($"[Build][重新生成] {packageName}：{reason}");
-                    string directory = GamePackageBuildService.Build(packageName, version, buildin);
-                    record = SaveRecord(key, GameBuildFingerprint.Package(packageName), directory, version, null,
-                        buildin ? packageName : null);
-                    EndStep("完成", $"版本={version}，输出={Path.GetFullPath(directory)}");
-                    return record;
-                }
+                // 主包不再保存复用记录，补丁只复用自己的成功构建记录。
+                string version = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
+                Debug.Log($"[Build][重新生成] {packageName}：{reason}");
+                string directory = GamePackageBuildService.Build(packageName, version, false);
+                record = SaveRecord(key, GameBuildFingerprint.Package(packageName), directory, version, null, null);
+                EndStep("完成", $"版本={version}，输出={Path.GetFullPath(directory)}");
+                return record;
             }
             EndStep("跳过", $"输入及产物未变化，版本={record.Version}，输出={Path.GetFullPath(record.Directory)}");
             return record;
@@ -487,11 +416,12 @@ namespace Game.Editor
             {
                 throw new BuildFailedException("发布文件集合不完整，保留原发布指针。");
             }
+            // 检查复制后的文件集合和长度，避免再次完整读取大视频计算哈希。
             foreach (string file in files)
             {
                 string relative = file.Substring(source.TrimEnd('/', '\\').Length).TrimStart('/', '\\');
                 string copy = Path.Combine(destination, relative);
-                if (!File.Exists(copy) || GameBuildFingerprint.FileHash(file) != GameBuildFingerprint.FileHash(copy))
+                if (!File.Exists(copy) || new FileInfo(file).Length != new FileInfo(copy).Length)
                 {
                     throw new BuildFailedException($"发布文件校验失败：{relative}");
                 }

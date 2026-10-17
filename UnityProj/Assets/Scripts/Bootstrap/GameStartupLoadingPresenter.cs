@@ -28,6 +28,8 @@ namespace Game
         private bool m_canShowLoading; // Logo 绘制一帧后才显示 Loading。
         private bool m_registered; // 是否成功取得唯一展示对象身份。
         private bool m_releasing; // 防止重复释放和退出回调。
+        private bool m_showCanvas; // 当前启动状态是否要求显示画布，不受日志窗口临时遮挡影响。
+        private StartupLoadingError m_reportedError; // 已输出的原始异常，防止重复渲染时刷屏。
 
         public bool IsReady => m_isReady;
 
@@ -37,7 +39,7 @@ namespace Game
         public void Render(StartupLoadingSnapshot snapshot, StartupLoadingError error)
         {
             if (snapshot == null || m_releasing) return;
-            m_canvas.enabled = m_canShowLoading && snapshot.IsVisible;
+            m_showCanvas = m_canShowLoading && snapshot.IsVisible;
             m_progressSlider.SetValueWithoutNotify(snapshot.OverallProgress);
             m_statusText.text = snapshot.Message;
             if (snapshot.TotalBytes > 0)
@@ -50,9 +52,16 @@ namespace Game
             if (error != null)
             {
                 m_errorText.text = error.Message + "\n\n请重新启动游戏。";
-                m_canvas.enabled = m_canShowLoading;
+                m_showCanvas = m_canShowLoading;
+                // 正式包也保留启动失败的原始异常，不能使用会被编译条件移除的日志入口。
+                if (m_reportedError != error)
+                {
+                    m_reportedError = error;
+                    Debug.LogException(error.Exception);
+                }
                 EnsureInput();
             }
+            m_canvas.enabled = m_showCanvas && !GameLogViewerController.IsVisible;
         }
 
         /// <summary>释放持久化根节点、按钮监听和自行创建的输入对象。</summary>
@@ -142,6 +151,12 @@ namespace Game
             if (Time.unscaledTime < m_nextInputCheck) return;
             m_nextInputCheck = Time.unscaledTime + 0.25f;
             EnsureInput();
+        }
+
+        private void LateUpdate()
+        {
+            // 画圈唤出日志后隐藏 Overlay Canvas，使 IMGUI 能显示并接收输入；关闭日志自动恢复。
+            if (!m_releasing) m_canvas.enabled = m_showCanvas && !GameLogViewerController.IsVisible;
         }
 
         private void BuildErrorPanel()

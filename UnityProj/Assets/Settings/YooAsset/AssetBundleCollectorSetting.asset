@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 185f6993d5150494d98da50e26cb1c25, type: 3}
   m_Name: AssetBundleCollectorSetting
   m_EditorClassIdentifier: 
-  ShowPackageView: 0
+  ShowPackageView: 1
   ShowEditorAlias: 0
-  UniqueBundleName: 0
+  UniqueBundleName: 1
   Packages:
   - PackageName: DefaultPackage
     PackageDesc: Game runtime resources
@@ -25,19 +25,6 @@ MonoBehaviour:
     AutoCollectShaders: 1
     IgnoreRuleName: NormalIgnoreRule
     Groups:
-    - GroupName: animations
-      GroupDesc: Animation resources
-      AssetTags: 
-      ActiveRuleName: EnableGroup
-      Collectors:
-      - CollectPath: Assets/Res/Animations
-        CollectorGUID: 7068a61f330c3af4baa9ed302bd71055
-        CollectorType: 0
-        AddressRuleName: AddressByResPath
-        PackRuleName: PackDirectory
-        FilterRuleName: CollectAll
-        AssetTags: 
-        UserData: 
     - GroupName: atlas
       GroupDesc: Sprite atlas resources
       AssetTags: 
@@ -45,6 +32,19 @@ MonoBehaviour:
       Collectors:
       - CollectPath: Assets/Res/Atlas
         CollectorGUID: ccfc8a93a6914604cb5fd154a8a8086d
+        CollectorType: 0
+        AddressRuleName: AddressByResPath
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+    - GroupName: animations
+      GroupDesc: Animation resources
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/Animations
+        CollectorGUID: 7068a61f330c3af4baa9ed302bd71055
         CollectorType: 0
         AddressRuleName: AddressByResPath
         PackRuleName: PackDirectory
@@ -77,19 +77,6 @@ MonoBehaviour:
         FilterRuleName: CollectAll
         AssetTags: 
         UserData: 
-    - GroupName: materials
-      GroupDesc: Material resources
-      AssetTags: 
-      ActiveRuleName: EnableGroup
-      Collectors:
-      - CollectPath: Assets/Res/Materials
-        CollectorGUID: f81d5d718ca64d740a7ad1b33d2d850c
-        CollectorType: 0
-        AddressRuleName: AddressByResPath
-        PackRuleName: PackDirectory
-        FilterRuleName: CollectAll
-        AssetTags: 
-        UserData: 
     - GroupName: prefabs
       GroupDesc: Prefab resources
       AssetTags: 
@@ -103,17 +90,30 @@ MonoBehaviour:
         FilterRuleName: CollectPrefab
         AssetTags: 
         UserData: 
-    - GroupName: scenes
-      GroupDesc: Hot-update scenes excluding enabled Build Settings scenes
+    - GroupName: materials
+      GroupDesc: Material resources
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
-      - CollectPath: Assets/Res/Scenes
-        CollectorGUID: 43f6ea9f46345f7419ddd2403b972f32
+      - CollectPath: Assets/Res/Materials
+        CollectorGUID: f81d5d718ca64d740a7ad1b33d2d850c
         CollectorType: 0
         AddressRuleName: AddressByResPath
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+    - GroupName: audioSettings
+      GroupDesc: Wwise initialization settings
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Wwise/ScriptableObjects/AkWwiseInitializationSettings.asset
+        CollectorGUID: 26c7ef5c1922a194eaeccb35ae68f3e8
+        CollectorType: 0
+        AddressRuleName: AddressWwiseInitializationSettings
         PackRuleName: PackSeparately
-        FilterRuleName: CollectHotUpdateScene
+        FilterRuleName: CollectAll
         AssetTags: 
         UserData: 
     - GroupName: textures
@@ -129,9 +129,22 @@ MonoBehaviour:
         FilterRuleName: CollectAll
         AssetTags: 
         UserData: 
+    - GroupName: scenes
+      GroupDesc: Hot-update scenes excluding enabled Build Settings scenes
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Res/Scenes
+        CollectorGUID: 43f6ea9f46345f7419ddd2403b972f32
+        CollectorType: 0
+        AddressRuleName: AddressByResPath
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectHotUpdateScene
+        AssetTags: 
+        UserData: 
     - GroupName: videoSubtitles
       GroupDesc: External SRT subtitle text assets
-      AssetTags: ''
+      AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
       - CollectPath: Assets/Res/Video
@@ -140,21 +153,8 @@ MonoBehaviour:
         AddressRuleName: AddressByResPath
         PackRuleName: PackSeparately
         FilterRuleName: CollectPulseSubtitle
-        AssetTags: ''
-        UserData: ''
-    - GroupName: audioSettings
-      GroupDesc: Wwise initialization settings
-      AssetTags: ''
-      ActiveRuleName: EnableGroup
-      Collectors:
-      - CollectPath: Assets/Wwise/ScriptableObjects/AkWwiseInitializationSettings.asset
-        CollectorGUID: 26c7ef5c1922a194eaeccb35ae68f3e8
-        CollectorType: 0
-        AddressRuleName: AddressWwiseInitializationSettings
-        PackRuleName: PackSeparately
-        FilterRuleName: CollectAll
-        AssetTags: ''
-        UserData: ''
+        AssetTags: 
+        UserData: 
   - PackageName: AudioPackage
     PackageDesc: Wwise raw audio content
     EnableAddressable: 1
@@ -166,17 +166,17 @@ MonoBehaviour:
     Groups:
     - GroupName: wwiseAudio
       GroupDesc: Manifest and referenced platform banks and media
-      AssetTags: ''
+      AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
       - CollectPath: Assets/Res/WwiseAudio
-        CollectorGUID: ''
+        CollectorGUID: 
         CollectorType: 0
         AddressRuleName: AddressWwiseAudio
         PackRuleName: PackRawFile
         FilterRuleName: CollectWwiseAudio
-        AssetTags: ''
-        UserData: ''
+        AssetTags: 
+        UserData: 
   - PackageName: CodePackage
     PackageDesc: HybridCLR assemblies and baseline metadata
     EnableAddressable: 1
@@ -188,17 +188,17 @@ MonoBehaviour:
     Groups:
     - GroupName: hotUpdateCode
       GroupDesc: Verified runtime assemblies and AOT metadata
-      AssetTags: ''
+      AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
       - CollectPath: Assets/Res/HotUpdateCode
-        CollectorGUID: ''
+        CollectorGUID: 
         CollectorType: 0
         AddressRuleName: AddressByResPath
         PackRuleName: PackRawFile
         FilterRuleName: CollectAll
-        AssetTags: ''
-        UserData: ''
+        AssetTags: 
+        UserData: 
   - PackageName: VideoPackage
     PackageDesc: Pulse raw video files
     EnableAddressable: 1
@@ -210,7 +210,7 @@ MonoBehaviour:
     Groups:
     - GroupName: pulseVideos
       GroupDesc: Individually downloadable Pulse files
-      AssetTags: ''
+      AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
       - CollectPath: Assets/Res/Video
@@ -219,5 +219,5 @@ MonoBehaviour:
         AddressRuleName: AddressByResPath
         PackRuleName: PackRawFile
         FilterRuleName: CollectPulseVideo
-        AssetTags: ''
-        UserData: ''
+        AssetTags: 
+        UserData: 

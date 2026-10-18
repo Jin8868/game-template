@@ -1,5 +1,8 @@
 using System;
 using UnityEngine;
+using AlloyFramework;
+using AlloyFramework.Audio;
+using AlloyFramework.HybridCLR;
 
 namespace Game
 {
@@ -21,7 +24,7 @@ namespace Game
     /// 主包内嵌的热更新入口配置，由 AOT 启动和编辑器构建共同读取。
     /// </summary>
     [CreateAssetMenu(menuName = "★AlloyFramework★/Boot 启动配置")]
-    public sealed class GameHotUpdateSettings : ScriptableObject
+    public sealed class GameHotUpdateSettings : ScriptableObject, IGameStartupConfigurationProvider
     {
         private const string RESOURCELOCATION = "GameHotUpdateSettings";
 
@@ -95,6 +98,29 @@ namespace Game
                 throw new InvalidOperationException("Boot 代码模式或资源模式不合法。");
             }
             return settings;
+        }
+
+        /// <summary>由框架启动步骤显式读取主包配置，并声明后续步骤需要创建的实现类型。</summary>
+        /// <returns>本轮启动使用的实现类型与业务入口信息。</returns>
+        /// <exception cref="InvalidOperationException">主包启动配置不合法。</exception>
+        public GameStartupConfiguration CreateStartupConfiguration()
+        {
+            // 沿用构建和启动共用的配置校验，资源模式必须早于 Resource 初始化确定。
+            GameHotUpdateSettings settings = Load();
+            GameRemoteRelease.Configure(settings);
+            AudioManager.Instance.SetInstaller(GameAudioInstaller.InstallAsync);
+
+            Type preparationType = settings.CodeMode == EGameCodeMode.HybridCLR
+                ? typeof(HybridCLRCodePreparation)
+                : typeof(DefaultGameCodePreparation);
+            Type loaderType = settings.CodeMode == EGameCodeMode.HybridCLR
+                ? typeof(HybridCLRGameEntryLoader)
+                : typeof(DefaultGameEntryLoader);
+            return new GameStartupConfiguration(
+                preparationType,
+                loaderType,
+                settings.RuntimeAssemblyName,
+                settings.InstallerTypeName);
         }
 
         /// <summary>检查标识是否可以安全用作发布路径中的单段目录。</summary>

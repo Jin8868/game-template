@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.Threading;
 using AlloyFramework;
 using Cysharp.Threading.Tasks;
+using UnityEngine.Scripting;
 
 namespace Game
 {
-    internal sealed class GameStartupPipeline
+    internal sealed class GameStartupPipeline : IGameStartup
     {
         private readonly List<IGameStartupStep> m_steps = new List<IGameStartupStep>(); // 按声明顺序执行。
         private int m_startedStepCount; // 已开始执行、需要逆序释放的步骤数。
         private bool m_hasRun; // 管线是否已经执行过。
 
         /// <summary>所有业务步骤声明的真实 Loading 步骤总数。</summary>
-        internal int StepCount
+        public int StepCount
         {
             get
             {
@@ -27,6 +28,7 @@ namespace Game
             }
         }
 
+        [Preserve]
         internal GameStartupPipeline()
         {
             // 显式声明项目安装顺序，网络注册管理在进入首个页面前安装。
@@ -34,7 +36,6 @@ namespace Game
             Add(new ConfigureFrameworkExtensionsStep());
             Add(new InitializeGameNetworkStep());
             Add(new InitializeAudioStep());
-            Add(new EnterGameStep());
         }
 
         internal GameStartupPipeline(params IGameStartupStep[] steps)
@@ -66,6 +67,18 @@ namespace Game
             }
 
             m_steps.Add(step);
+        }
+
+        /// <summary>由框架在所有系统就绪后调用，初始化本项目注册的业务功能。</summary>
+        /// <param name="loadingSession">与游戏入口共享的 Loading 会话。</param>
+        /// <param name="cancellationToken">用于取消业务初始化的令牌。</param>
+        /// <returns>全部业务功能初始化完成的任务。</returns>
+        /// <exception cref="InvalidOperationException">业务初始化管线已经执行过。</exception>
+        public UniTask InitializeAsync(
+            IStartupLoadingSession loadingSession,
+            CancellationToken cancellationToken)
+        {
+            return RunAsync(loadingSession, cancellationToken);
         }
 
         /// <summary>执行全部业务启动步骤。</summary>
@@ -103,7 +116,6 @@ namespace Game
                 {
                     await step.ExecuteAsync(loadingSession, cancellationToken);
                     cancellationToken.ThrowIfCancellationRequested();
-
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
@@ -122,9 +134,9 @@ namespace Game
             }
         }
 
-        /// <summary>逆序释放已开始执行的业务步骤，等待场景等异步资源卸载。</summary>
+        /// <summary>逆序释放已经开始执行的业务功能，等待异步资源清理完成。</summary>
         /// <returns>所有已启动步骤的清理任务。</returns>
-        internal async UniTask ShutdownAsync()
+        public async UniTask ShutdownAsync()
         {
             // 只逆序释放已经开始的步骤，单个失败不阻止其他资源清理。
             while (m_startedStepCount > 0)

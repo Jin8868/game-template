@@ -5,7 +5,7 @@ using Cysharp.Threading.Tasks;
 
 namespace Game
 {
-    internal sealed class InitializeAudioStep : IGameStartupStep
+    internal sealed class InitializeAudioStep : IGameStartupStep, IUniTaskAsyncDisposable
     {
         /// <summary>当前启动步骤的日志名称。</summary>
         public string Name => "初始化框架音频与默认监听器";
@@ -28,6 +28,13 @@ namespace Game
             await AudioManager.Instance.ConfigureAndInitializeAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             loadingSession?.CompleteStep();
+        }
+
+        /// <summary>业务功能退出时关闭音频引擎，并释放内容租约。</summary>
+        /// <returns>音频引擎关闭完成的任务。</returns>
+        public UniTask DisposeAsync()
+        {
+            return AudioManager.Instance.ShutdownAsync();
         }
     }
 }

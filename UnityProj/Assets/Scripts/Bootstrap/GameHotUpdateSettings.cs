@@ -113,12 +113,8 @@ namespace Game
             Type preparationType = settings.CodeMode == EGameCodeMode.HybridCLR
                 ? typeof(HybridCLRCodePreparation)
                 : typeof(DefaultGameCodePreparation);
-            Type loaderType = settings.CodeMode == EGameCodeMode.HybridCLR
-                ? typeof(HybridCLRGameEntryLoader)
-                : typeof(DefaultGameEntryLoader);
             return new GameStartupConfiguration(
                 preparationType,
-                loaderType,
                 settings.RuntimeAssemblyName,
                 settings.InstallerTypeName);
         }

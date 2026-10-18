@@ -47,6 +47,11 @@ namespace Game.UI
         public UnityEngine.UI.Text TxtTime => m_txtTime;
 
         [UnityEngine.SerializeField, AlloyFramework.UI.UIBindingReference]
+        private UnityEngine.UI.Button m_btnChange;
+
+        public UnityEngine.UI.Button BtnChange => m_btnChange;
+
+        [UnityEngine.SerializeField, AlloyFramework.UI.UIBindingReference]
         private UnityEngine.UI.Button m_btnClose;
 
         public UnityEngine.UI.Button BtnClose => m_btnClose;

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using AlloyFramework;
 using AlloyFramework.UI;
@@ -7,15 +8,27 @@ using Game.Video;
 
 namespace Game.UI
 {
+
+    public class VideoData
+    {
+        public string videoLocation;
+        public string audioLocation;
+        public string subtitleLocation;
+        public double startTimeSeconds;
+    }
+    
     /// <summary>管理视频预览界面的播放器关闭和资源释放。</summary>
     public sealed class VideoPreviewUIController : UIController<VideoPreviewUIView>
     {
         private const string VIDEOLOCATION = "Video/Synthetic/all_in_one"; // VideoPackage 中的视频资源地址。
         private const string AUDIOEVENTKEY = "Play_Video_AllInOne"; // Wwise 中为此视频制作的专用音轨事件。
-        private const string SUBTITLELOCATION = ""; // 本地联调英文字幕地址。Video/Synthetic/Sintel.2010.1080p.en
+        private const string SUBTITLELOCATION = "Video/Synthetic/Sintel.2010.1080p.en"; // 本地联调英文字幕地址。Video/Synthetic/Sintel.2010.1080p.en
         private GameVideoPlayer m_videoPlayer; // 预制体上封装资源和音轨的工程视频组件。
         private UniTask m_playerCloseTask; // 可重复等待的关闭任务，供关闭动画和销毁流程共享。
         private bool m_isClosingPlayer; // 本轮关闭已发起，避免重复提交资源释放请求。
+        
+        public List<VideoData> m_VideoDatas = new List<VideoData>();
+        private int m_selectIndex;
 
         // Controller 和 View 首次创建后调用一次。
         protected override void OnCreate()
@@ -25,6 +38,52 @@ namespace Game.UI
             if (m_videoPlayer == null)
                 throw new InvalidOperationException("VideoPreviewUI 预制体缺少 GameVideoPlayer 组件。");
             View.BtnClose.onClick.AddListener(OnCloseBtnClick);
+            View.BtnChange.onClick.AddListener(OnBtnChangeClick);
+            InitVideoData();
+        }
+
+        private void OnBtnChangeClick()
+        {
+            if (m_selectIndex == 0)
+            {
+                m_selectIndex = 1;
+            }
+            else
+            {
+                m_selectIndex = 0;
+            }
+
+            PlaySelectVideo();
+        }
+
+        private void InitVideoData()
+        {
+            m_selectIndex = 0;
+            var sintelData = new VideoData();
+            sintelData.videoLocation =  "Video/Synthetic/Sintel.2010.1080p";
+            sintelData.audioLocation =  "Play_Sintel";
+            sintelData.subtitleLocation = "Video/Synthetic/Sintel.2010.1080p.en";
+            sintelData.startTimeSeconds = 4.0f;
+            m_VideoDatas.Add(sintelData);
+            
+            var allInOne = new VideoData();
+            allInOne.videoLocation = "Video/Synthetic/all_in_one";
+            allInOne.audioLocation = "Play_Video_AllInOne";
+            allInOne.subtitleLocation = string.Empty;
+            allInOne.startTimeSeconds = 0.0f;
+            m_VideoDatas.Add(allInOne);
+        }
+
+        private VideoData GetSelectedVideoData()
+        {
+            return  m_VideoDatas[m_selectIndex];
+        }
+
+        private void PlaySelectVideo()
+        {
+            var selectVideoData = GetSelectedVideoData();
+            m_videoPlayer.Play(selectVideoData.videoLocation, selectVideoData.audioLocation, 
+                selectVideoData.subtitleLocation, startTimeSeconds: selectVideoData.startTimeSeconds);
         }
 
         private void OnCloseBtnClick()
@@ -69,7 +128,7 @@ namespace Game.UI
         protected override void OnEndOpenAnimation()
         {
             // 资源地址由 VideoPackage 解析；音轨使用事件名，由 AudioPackage 准备 Wwise 依赖。
-            m_videoPlayer.Play(VIDEOLOCATION, AUDIOEVENTKEY, SUBTITLELOCATION, startTimeSeconds: 4.0);
+            PlaySelectVideo();
         }
 
         // 界面完成打开并可以交互后调用。
@@ -91,6 +150,8 @@ namespace Game.UI
         protected override void OnClose()
         {
             BeginPlayerClose();
+            m_VideoDatas.Clear();
+            m_VideoDatas = null;
         }
 
         // 开始播放关闭动画前调用。

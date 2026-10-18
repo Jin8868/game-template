@@ -35,7 +35,6 @@ namespace Game
             Add(new RegisterGameModelsStep());
             Add(new ConfigureFrameworkExtensionsStep());
             Add(new InitializeGameNetworkStep());
-            Add(new InitializeAudioStep());
         }
 
         internal GameStartupPipeline(params IGameStartupStep[] steps)

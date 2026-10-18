@@ -16,6 +16,8 @@ namespace Game.Video
         private PulseVideoPlayer.UI.PulseVideoPlayer m_player; // 同物体上负责画面和 UI 交互的组件。
         private VideoPlaybackCoordinator m_coordinator; // 本组件独占的资源和音画协调器。
         private bool m_isDisposed; // 销毁后禁止重新初始化协调器。
+        private bool m_applicationPaused; // 应用暂停信号与桌面焦点信号合并后通知协调器。
+        private bool m_applicationFocused = true; // Windows 切换到其他窗口时暂停视频。
 
         /// <summary>当前视频状态。</summary>
         public EPulsePlayerState State => m_player != null ? m_player.State : EPulsePlayerState.Closed;
@@ -77,6 +79,31 @@ namespace Game.Video
         {
             EnsureInitialized();
             m_player.enabled = true;
+            m_applicationFocused = Application.isFocused;
+            SynchronizeApplicationState();
+        }
+
+        private void OnApplicationPause(bool paused)
+        {
+            // 使用应用暂停事件同步音画，不能只依赖 Unity 停止绘制视频。
+            m_applicationPaused = paused;
+            SynchronizeApplicationState();
+        }
+
+        private void OnApplicationFocus(bool focused)
+        {
+            m_applicationFocused = focused;
+            SynchronizeApplicationState();
+        }
+
+        private void SynchronizeApplicationState()
+        {
+            bool paused = m_applicationPaused;
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+            // Windows 切后台主要表现为失去焦点；Android 软键盘也会影响焦点，使用暂停信号。
+            paused |= !m_applicationFocused;
+#endif
+            m_coordinator?.SetApplicationPaused(paused);
         }
 
         /// <summary>使用 Inspector 配置播放，已有请求暂停时恢复，结束时重新播放。</summary>

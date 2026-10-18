@@ -17,6 +17,7 @@ namespace Game.Video
         private UniTask m_retirement = UniTask.CompletedTask; // 当前关闭链，可供多个等待者共享。
         private int m_generation; // 取消仍在等待上次关闭的新请求。
         private bool m_isDisposed; // 销毁后不再接受新的播放。
+        private bool m_applicationPaused; // 应用在后台时禁止启动或自动恢复音画。
         private string m_lastLocation; // 最近一次业务视频地址，不保存临时下载路径。
         private string m_lastAudioKey; // 最近一次音轨事件。
         private string m_lastSubtitleLocation; // 最近一次外置字幕地址，无字幕请求会清空。
@@ -166,11 +167,16 @@ namespace Game.Video
                 m_player.SetSubtitleTrack(request.Subtitles);
                 m_player.SetLoadingProgress(0.95f);
                 if (request.AudioScope != null) ToMilliseconds(m_player.DurationSeconds);
+                await WaitForForegroundAsync(request);
                 await StartAudioAsync(request);
                 EnsureCurrent(request);
+                await WaitForForegroundAsync(request);
                 m_player.SetLoadingProgress(1);
                 EnsureCurrent(request);
                 request.Busy = false;
+                request.NeedsForegroundSync = false;
+                request.ResumeOnForeground = false;
+                SetAudioPaused(request, false);
                 m_player.StartPreparedVideo();
                 EnsureCurrent(request);
                 trace.Complete();
@@ -210,6 +216,12 @@ namespace Game.Video
         public void Resume()
         {
             Request request = RequireActive();
+            if (m_applicationPaused || request.NeedsForegroundSync || request.Recovering)
+            {
+                // 回前台的目标画面提交前，不能提前解除音轨暂停。
+                request.ResumeOnForeground = true;
+                return;
+            }
             if (request.Busy) throw new InvalidOperationException("请等待音画准备或跳转完成。");
             if (m_player.State != EPulsePlayerState.Paused) return;
             var trace = new VideoPlaybackTrace("恢复");
@@ -220,6 +232,31 @@ namespace Game.Video
                 trace.Complete();
             }
             catch (Exception exception) { trace.Fail(exception); throw; }
+        }
+
+        /// <summary>切后台时冻结音画，回前台后由 Tick 调度目标画面与音轨的重新同步。</summary>
+        /// <param name="paused">应用是否已经进入后台。</param>
+        public void SetApplicationPaused(bool paused)
+        {
+            if (m_applicationPaused == paused || m_isDisposed) return;
+            m_applicationPaused = paused;
+            Request request = m_request;
+            if (!paused || request == null) return;
+
+            try
+            {
+                // 仅记录原本的播放意图；手动暂停的视频回来后仍保持暂停。
+                bool wasPlaying = m_player.State == EPulsePlayerState.Playing;
+                request.ResumeOnForeground |= wasPlaying || (request.Seeking && request.ResumeAfterSeek);
+                request.NeedsForegroundSync |= wasPlaying || request.Seeking ||
+                    m_player.State == EPulsePlayerState.Paused;
+                request.ResumeAfterSeek = false;
+                if (wasPlaying) m_player.PauseVideo();
+                SetAudioPaused(request, true);
+                Debug.Log($"[VideoLifecycle] 已切后台，位置={m_player.PositionSeconds:F3}s，" +
+                    $"回前台自动播放={request.ResumeOnForeground}。");
+            }
+            catch (Exception exception) { Fail(exception); }
         }
 
         /// <summary>重新提交最近的业务地址和循环配置，首次播放使用组件 Inspector 配置。</summary>
@@ -280,11 +317,13 @@ namespace Game.Video
                         SetAudioPaused(request, true);
                         if (!AudioManager.Instance.SeekAudio(request.PlayID, ToMilliseconds(target)))
                             throw new InvalidOperationException("Wwise 未接受音轨定位，请检查事件是否为可定位的单一音轨。");
-                        if (resume) SetAudioPaused(request, false);
+                        if (request.ResumeAfterSeek && !m_applicationPaused && !request.NeedsForegroundSync)
+                            SetAudioPaused(request, false);
                     }
                     request.Busy = false;
                     request.Seeking = false;
-                    if (resume) m_player.ResumeVideo();
+                    if (request.ResumeAfterSeek && !m_applicationPaused && !request.NeedsForegroundSync)
+                        m_player.ResumeVideo();
                     trace.Complete();
                 }
                 catch (Exception exception)
@@ -352,7 +391,13 @@ namespace Game.Video
                 CloseAsync().Forget(LogFailure);
                 return;
             }
-            if (request.Busy || request.PlayID == 0 || request.AudioEnded) return;
+            if (m_applicationPaused || request.Busy || request.Recovering) return;
+            if (request.NeedsForegroundSync)
+            {
+                RecoverForegroundAsync(request).Forget(LogFailure);
+                return;
+            }
+            if (request.PlayID == 0 || request.AudioEnded) return;
             try
             {
                 AudioManager audio = AudioManager.Instance;
@@ -405,9 +450,14 @@ namespace Game.Video
             {
                 await m_player.SeekVideoAsync(0, request.Token);
                 EnsureCurrent(request);
+                await WaitForForegroundAsync(request);
                 await StartAudioAsync(request);
                 EnsureCurrent(request);
+                await WaitForForegroundAsync(request);
                 request.Busy = false;
+                request.NeedsForegroundSync = false;
+                request.ResumeOnForeground = false;
+                SetAudioPaused(request, false);
                 m_player.ResumeVideo();
                 trace.Complete();
             }
@@ -432,7 +482,49 @@ namespace Game.Video
                 request.Token);
             request.AudioEnded = false;
             request.AudioPaused = false;
+            if (m_applicationPaused) SetAudioPaused(request, true);
             request.NextSyncTime = Time.realtimeSinceStartupAsDouble + 0.5;
+        }
+
+        private async UniTask WaitForForegroundAsync(Request request)
+        {
+            // 准备和循环跨过切后台事件时，也不能在后台启动新音轨或视频时钟。
+            EnsureCurrent(request);
+            while (m_applicationPaused)
+            {
+                await UniTask.NextFrame(request.Token);
+                EnsureCurrent(request);
+            }
+        }
+
+        private async UniTask RecoverForegroundAsync(Request request)
+        {
+            request.Recovering = true;
+            request.NeedsForegroundSync = false;
+            double position = m_player.PositionSeconds;
+            try
+            {
+                // 复用拖动进度条的定位链：先提交目标画面，再把 Wwise 定位到同一时间。
+                await SeekAsync(position, request.Token);
+                EnsureCurrent(request);
+                if (m_applicationPaused || request.NeedsForegroundSync) return;
+                bool resume = request.ResumeOnForeground;
+                request.ResumeOnForeground = false;
+                if (resume)
+                {
+                    SetAudioPaused(request, false);
+                    m_player.ResumeVideo();
+                }
+                Debug.Log($"[VideoLifecycle] 前台音画同步完成，位置={position:F3}s，继续播放={resume}。");
+            }
+            catch (Exception exception)
+            {
+                // 关闭或换片后，旧恢复任务不能影响新会话；原生恢复失败则停止音画。
+                if (ReferenceEquals(m_request, request) && !(exception is OperationCanceledException))
+                    Fail(exception);
+                throw;
+            }
+            finally { request.Recovering = false; }
         }
 
         private static async UniTask RetireAsync(Request request, UniTask videoClosed,
@@ -541,6 +633,9 @@ namespace Game.Video
             internal int SeekGeneration { get; set; }
             internal bool AudioEnded { get; set; }
             internal bool AudioPaused { get; set; }
+            internal bool NeedsForegroundSync { get; set; }
+            internal bool ResumeOnForeground { get; set; }
+            internal bool Recovering { get; set; }
             internal double NextSyncTime { get; set; }
 
             internal Request(VideoPlaybackCoordinator owner, CancellationToken token, string audioKey,

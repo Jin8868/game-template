@@ -30,10 +30,6 @@ namespace Game.Editor
             public string Input;
             /// <summary>步骤输出目录。</summary>
             public string Directory;
-            /// <summary>输出目录的内容指纹。</summary>
-            public string OutputHash;
-            /// <summary>主包内置文件的内容指纹。</summary>
-            public string BuildinHash;
             /// <summary>资源包版本。</summary>
             public string Version;
             /// <summary>对应的主包基线。</summary>
@@ -185,19 +181,7 @@ namespace Game.Editor
             }
             string releaseID = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
             EndStep("完成", $"基线={identity.BaselineID}");
-            BeginStep("补丁输入检查", "比较代码、音频、资源和已发布产物");
             var packages = new List<BuildStepRecord>();
-            string input = GameBuildFingerprint.Code(true) + GameBuildFingerprint.Package("AudioPackage") +
-                GameBuildFingerprint.Package("VideoPackage") +
-                GameBuildFingerprint.Package("DefaultPackage") + identity.BaselineID;
-            BuildStepRecord previous = LoadRecord("patch-release");
-            if (IsReusable(previous, input, null) && previous.BaselineID == identity.BaselineID &&
-                IsCurrentRelease(identity.BaselineID, previous.Version))
-            {
-                EndStep("跳过", $"输入和已发布产物未变化，版本={previous.Version}");
-                return;
-            }
-            EndStep("完成", "补丁内容或发布状态变化，继续生成");
             BeginStep("1/4 热更新代码", hybrid ? "检查 DLL 编译缓存及旧主包 API 兼容性" : "Default 模式");
             if (hybrid)
             {
@@ -261,42 +245,20 @@ namespace Game.Editor
             packages.Add(audio);
             packages.Add(video);
             packages.Add(resources);
-            BeginStep("发布热更新补丁", "校验发布文件并更新服务器版本指针");
+            BeginStep("发布热更新补丁", "复制发布文件并更新服务器版本指针");
             string published = Publish(identity.BaselineID, releaseID, packages);
-            SaveRecord("patch-release", input, published, releaseID, identity.BaselineID, null);
             EndStep("完成", $"版本={releaseID}，输出={Path.GetFullPath(published)}");
             Debug.Log($"[HotUpdate] 补丁发布完成：{releaseID}。请重启同一个主包验证，未构建 Player。");
         }
 
         private static BuildStepRecord BuildPackage(string packageName, bool buildin, string phase)
         {
-            // 完整出包直接生成新版本，补丁流程才比较输入并决定是否复用。
-            if (buildin)
-            {
-                BeginStep($"{phase} {packageName}", "重新构建资源包并复制内置资源");
-                string version = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
-                string directory = GamePackageBuildService.Build(packageName, version, true);
-                EndStep("完成", $"版本={version}，输出={Path.GetFullPath(directory)}");
-                return new BuildStepRecord { Directory = directory, Version = version };
-            }
-
-            BeginStep($"{phase} {packageName}", "检查补丁资源输入和产物");
-            string input = GameBuildFingerprint.Package(packageName);
-            string key = "patch-" + packageName;
-            BuildStepRecord record = LoadRecord(key);
-            string reason = GetRebuildReason(record, input, null);
-            if (reason != null)
-            {
-                // 主包不再保存复用记录，补丁只复用自己的成功构建记录。
-                string version = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
-                Debug.Log($"[Build][重新生成] {packageName}：{reason}");
-                string directory = GamePackageBuildService.Build(packageName, version, false);
-                record = SaveRecord(key, GameBuildFingerprint.Package(packageName), directory, version, null, null);
-                EndStep("完成", $"版本={version}，输出={Path.GetFullPath(directory)}");
-                return record;
-            }
-            EndStep("跳过", $"输入及产物未变化，版本={record.Version}，输出={Path.GetFullPath(record.Directory)}");
-            return record;
+            // 外层不再读取资源内容做指纹校验，直接使用 YooAsset 自身的构建流程。
+            BeginStep($"{phase} {packageName}", buildin ? "构建资源包并复制内置资源" : "构建补丁资源包");
+            string version = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
+            string directory = GamePackageBuildService.Build(packageName, version, buildin);
+            EndStep("完成", $"版本={version}，输出={Path.GetFullPath(directory)}");
+            return new BuildStepRecord { Directory = directory, Version = version };
         }
 
         private static void BeginStep(string step, string detail)
@@ -435,7 +397,7 @@ namespace Game.Editor
 
         private static string GetRebuildReason(BuildStepRecord record, string input, string buildinPackage)
         {
-            // 输入及产物必须同时匹配，不能仅凭成功记录复用被删除或修改的输出。
+            // 代码编译缓存保留输入比较和目录检查，不再读取产物内容计算哈希。
             if (record == null)
             {
                 return "没有成功缓存记录";
@@ -448,19 +410,15 @@ namespace Game.Editor
             {
                 return "构建产物目录缺失";
             }
-            if (record.OutputHash != GameBuildFingerprint.DirectoryHash(record.Directory))
+            if (!File.Exists(Path.Combine(record.Directory, GameHotUpdateSettings.Load().RuntimeAssemblyName + ".dll")))
             {
-                return "构建产物内容变化";
+                return "缓存的业务 DLL 缺失";
             }
             if (buildinPackage != null)
             {
                 if (!File.Exists(Path.Combine(GetBuildin(buildinPackage), "BuildinCatalog.bytes")))
                 {
                     return "内置资源目录缺少 BuildinCatalog.bytes";
-                }
-                if (record.BuildinHash != GameBuildFingerprint.DirectoryHash(GetBuildin(buildinPackage)))
-                {
-                    return "内置资源内容变化";
                 }
             }
             return null;
@@ -483,9 +441,6 @@ namespace Game.Editor
             {
                 Input = input,
                 Directory = directory,
-                OutputHash = GameBuildFingerprint.DirectoryHash(directory),
-                BuildinHash = buildinPackage == null ? null :
-                    GameBuildFingerprint.DirectoryHash(GetBuildin(buildinPackage)),
                 Version = version,
                 BaselineID = baselineID
             };

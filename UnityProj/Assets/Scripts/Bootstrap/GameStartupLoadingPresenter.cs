@@ -21,7 +21,8 @@ namespace Game
         private Canvas m_canvas; // 跨场景存在的最高层启动画布。
         private GameObject m_errorPanel; // 唯一模态错误面板。
         private Text m_errorText; // 可信错误提示，不展示原始堆栈。
-        private Button m_exitButton; // 不可恢复时仅允许退出。
+        private Button m_exitButton; // 不可恢复时退出应用。
+        private Button m_logButton; // 启动失败时直接打开主包日志，不要求先识别手势。
         private UnityEventSystem m_ownedEventSystem; // 场景未提供输入时的持久化回退。
         private float m_nextInputCheck; // 限制启动期间的输入节点检查频率。
         private bool m_isReady; // 已实际绘制一帧，可以开始联网。
@@ -79,7 +80,8 @@ namespace Game
             DontDestroyOnLoad(gameObject);
             m_canvas = GetComponent<Canvas>();
             m_canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            m_canvas.sortingOrder = short.MaxValue;
+            // 为独立日志入口预留最高排序，即使启动错误面板覆盖全屏也能打开日志。
+            m_canvas.sortingOrder = short.MaxValue - 1;
             gameObject.AddComponent<GraphicRaycaster>();
             m_progressSlider.interactable = false;
             m_statusText.supportRichText = false;
@@ -176,8 +178,25 @@ namespace Game
             m_errorText.supportRichText = false;
             m_errorText.raycastTarget = false;
 
-            RectTransform buttonRect = CreateRect("Exit", overlay, new Vector2(0.4f, 0.12f),
-                new Vector2(0.6f, 0.22f));
+            // 错误面板提供明确的日志入口，查看异常后仍可返回原错误状态。
+            RectTransform logRect = CreateRect("ViewLogs", overlay, new Vector2(0.22f, 0.12f),
+                new Vector2(0.46f, 0.22f));
+            Image logImage = logRect.gameObject.AddComponent<Image>();
+            logImage.color = new Color(0.25f, 0.45f, 0.7f, 1f);
+            m_logButton = logRect.gameObject.AddComponent<Button>();
+            m_logButton.targetGraphic = logImage;
+            m_logButton.onClick.AddListener(GameLogViewerController.Show);
+            RectTransform logLabelRect = CreateRect("Label", logRect, Vector2.zero, Vector2.one);
+            Text logLabel = logLabelRect.gameObject.AddComponent<Text>();
+            logLabel.font = m_statusText.font;
+            logLabel.fontSize = 36;
+            logLabel.color = Color.white;
+            logLabel.alignment = TextAnchor.MiddleCenter;
+            logLabel.text = "查看日志";
+            logLabel.raycastTarget = false;
+
+            RectTransform buttonRect = CreateRect("Exit", overlay, new Vector2(0.54f, 0.12f),
+                new Vector2(0.78f, 0.22f));
             Image buttonImage = buttonRect.gameObject.AddComponent<Image>();
             buttonImage.color = new Color(0.25f, 0.45f, 0.7f, 1f);
             m_exitButton = buttonRect.gameObject.AddComponent<Button>();
@@ -225,6 +244,7 @@ namespace Game
             SceneManager.sceneLoaded -= OnSceneLoaded;
             Application.quitting -= OnApplicationQuitting;
             if (m_exitButton != null) m_exitButton.onClick.RemoveListener(ExitGame);
+            if (m_logButton != null) m_logButton.onClick.RemoveListener(GameLogViewerController.Show);
             if (m_registered) StartupLoading.Unregister(this);
         }
     }

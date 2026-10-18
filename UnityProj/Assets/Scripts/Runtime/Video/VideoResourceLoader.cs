@@ -17,6 +17,13 @@ namespace Game.Video
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (string.IsNullOrWhiteSpace(location)) throw new ArgumentException("视频地址不能为空。", nameof(location));
+#if UNITY_ANDROID && !UNITY_EDITOR
+            if (location.StartsWith("jar:", StringComparison.OrdinalIgnoreCase))
+            {
+                // APK 内置视频由 Pulse 按 fd 区间直读，不能当作普通文件或整包拷出。
+                return new VideoResourceLease(location);
+            }
+#endif
             if (Uri.TryCreate(location, UriKind.Absolute, out Uri address))
             {
                 if (address.Scheme == Uri.UriSchemeHttp || address.Scheme == Uri.UriSchemeHttps)

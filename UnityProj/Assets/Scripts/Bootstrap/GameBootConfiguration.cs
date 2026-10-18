@@ -12,6 +12,9 @@ namespace Game
 
         private void Awake()
         {
+            // 场景入口再次确保日志存在，不依赖同一启动阶段的回调执行顺序。
+            GameLogViewerInstaller.Install();
+
             // 在 Boot 的 Awake 注册 AOT 展示，框架异步等待其实际绘制完成。
             GameStartupLoadingInstaller.EnsurePresenter();
         }

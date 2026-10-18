@@ -81,6 +81,11 @@ namespace Game.Editor
             PlayerSettings.SetApiCompatibilityLevel(BuildTargetGroup.Standalone, ApiCompatibilityLevel.NET_Unity_4_8);
             PlayerSettings.SetApiCompatibilityLevel(BuildTargetGroup.Android, ApiCompatibilityLevel.NET_Unity_4_8);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+            // Pulse 当前仅支持 GLES3；不能让自动选择优先启用 Vulkan。
+            PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
+            PlayerSettings.SetGraphicsAPIs(BuildTarget.Android,
+                new[] { UnityEngine.Rendering.GraphicsDeviceType.OpenGLES3 });
+            PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel24;
             if (entrySettings.ResourceMode == EGameResourceMode.HotUpdate &&
                 entrySettings.ServerURL.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
             {

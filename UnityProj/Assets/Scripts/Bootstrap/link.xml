@@ -8,4 +8,8 @@
   <assembly fullname="Game.Protocol" preserve="all" />
   <assembly fullname="Luban.Runtime" preserve="all" />
   <assembly fullname="UniTask" preserve="all" />
+  <!-- 热更新资源中的 AudioListener 不一定出现在主包场景中，显式保留对应引擎类型。 -->
+  <assembly fullname="UnityEngine.AudioModule">
+    <type fullname="UnityEngine.AudioListener" preserve="all" />
+  </assembly>
 </linker>

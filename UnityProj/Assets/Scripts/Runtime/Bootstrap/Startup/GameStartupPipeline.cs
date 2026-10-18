@@ -12,7 +12,20 @@ namespace Game
         private int m_startedStepCount; // 已开始执行、需要逆序释放的步骤数。
         private bool m_hasRun; // 管线是否已经执行过。
 
-        internal int StepCount => m_steps.Count;
+        /// <summary>所有业务步骤声明的真实 Loading 步骤总数。</summary>
+        internal int StepCount
+        {
+            get
+            {
+                int stepCount = 0;
+                foreach (var step in m_steps)
+                {
+                    stepCount += step.StepCount;
+                }
+
+                return stepCount;
+            }
+        }
 
         internal GameStartupPipeline()
         {
@@ -21,6 +34,7 @@ namespace Game
             Add(new ConfigureFrameworkExtensionsStep());
             Add(new InitializeGameNetworkStep());
             Add(new InitializeAudioStep());
+            Add(new EnterGameStep());
         }
 
         internal GameStartupPipeline(params IGameStartupStep[] steps)
@@ -83,13 +97,13 @@ namespace Game
                 var step = m_steps[index];
                 m_startedStepCount = index + 1;
                 var startedAt = DateTime.UtcNow;
-                loadingSession?.BeginStep(EStartupLoadingStage.InitializingBusiness, step.Name);
+                // 具体阶段与子步骤进度由业务步骤报告，管线只组织执行顺序。
                 AlloyDebug.Log($"[GameStartup] 开始：{step.Name}");
                 try
                 {
-                    await step.ExecuteAsync(cancellationToken);
+                    await step.ExecuteAsync(loadingSession, cancellationToken);
                     cancellationToken.ThrowIfCancellationRequested();
-                    loadingSession?.CompleteStep();
+
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
@@ -108,22 +122,29 @@ namespace Game
             }
         }
 
-        internal void Shutdown()
+        /// <summary>逆序释放已开始执行的业务步骤，等待场景等异步资源卸载。</summary>
+        /// <returns>所有已启动步骤的清理任务。</returns>
+        internal async UniTask ShutdownAsync()
         {
             // 只逆序释放已经开始的步骤，单个失败不阻止其他资源清理。
             while (m_startedStepCount > 0)
             {
                 m_startedStepCount--;
-                if (m_steps[m_startedStepCount] is IDisposable disposable)
+                var step = m_steps[m_startedStepCount];
+                try
                 {
-                    try
+                    if (step is IUniTaskAsyncDisposable asyncDisposable)
+                    {
+                        await asyncDisposable.DisposeAsync();
+                    }
+                    else if (step is IDisposable disposable)
                     {
                         disposable.Dispose();
                     }
-                    catch (Exception exception)
-                    {
-                        AlloyDebug.Error(exception);
-                    }
+                }
+                catch (Exception exception)
+                {
+                    AlloyDebug.Error(exception);
                 }
             }
         }

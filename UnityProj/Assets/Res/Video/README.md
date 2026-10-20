@@ -215,3 +215,19 @@ AudioPlayOptions.StartTimeMs 默认零；非零要求后端实现 IAudioTimeline
 手动验证：从 4 秒启动，检查首个可见画面、音轨与字幕；播放中暂停、恢复、百分比跳转；
 调用 ReplayAsync 检查回到零秒；Count 模式检查后续循环从零及最终 Completed；
 在准备或起点定位期间关闭界面，确认旧请求不会补播。未执行编译或运行测试。
+
+## Android 视频长音轨
+
+`Assets/Settings/VideoAudioStreaming.json` 显式列出视频的 Wwise 音频事件。
+Android 完整出包时，构建流程根据事件及共享依赖，为对应的 `.wem` 生成单媒体 AKPK v1 文件包。
+Collector 收集 `.pck`，不同时收集对应的原始 `.wem`；普通音效保持原有交付方式。
+Wwise Authoring 中仍须将这些音轨配置为 Streaming，文件包不会修改音频编码或流式设置。
+
+视频通过 `VideoAudioTrackLoader` 准备音轨，复用原有音频作用域、音画同步和关闭流程。
+APK 中未压缩的内置文件包由 Wwise 读取索引并按需读取媒体，不先复制完整音轨。
+当前资源清单选中更新文件时，继续通过 YooAsset 准备磁盘文件包，保持文件租约直到原生卸载。
+同一媒体 ID 的不同版本不能在已有组仍使用时同时登记。
+
+此改动包含 Alloy.Runtime、Alloy.Audio.Wwise 和音频构建产物，首次需要完整出包建立新 AOT 基线。
+后续同一基线内更新音轨可沿用现有补丁流程。当前没有编译或真机验收。
+重装后检查 `[Pulse耗时]` 中媒体组的 `APK直读包数=1`，再验证定位、循环、关闭重开和音轨更新。

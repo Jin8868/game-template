@@ -109,6 +109,13 @@ namespace Game.Video
             EPulseLoopMode loopMode, int playCount, CancellationToken cancellationToken, double startTimeSeconds)
         {
             var trace = new VideoPlaybackTrace("播放准备");
+            PulsePreparationTimings timings = trace.Timings;
+            timings.AddDetail("视频", videoLocation);
+            timings.AddDetail("音轨", string.IsNullOrWhiteSpace(audioEventKey) ? "未配置" : audioEventKey);
+            timings.AddDetail("字幕", string.IsNullOrWhiteSpace(subtitleLocation) ? "未配置" : subtitleLocation);
+            timings.AddDetail("起点秒", startTimeSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            timings.AddDetail("图形API", SystemInfo.graphicsDeviceType.ToString());
+            timings.BeginStage("校验及旧会话关闭");
             Request request = null;
             try
             {
@@ -142,34 +149,48 @@ namespace Game.Video
                 m_player.ShowPreparing();
 
                 request.Video = await VideoResourceLoader.LoadAsync(
-                    videoLocation, m_packageName, request, request.Token);
+                    videoLocation, m_packageName, request, request.Token, timings);
                 EnsureCurrent(request);
                 // 下载占总准备进度的前 60%，其余阶段完成后更新，不使用计时模拟进度。
                 m_player.SetLoadingProgress(0.6f);
                 if (!string.IsNullOrWhiteSpace(subtitleLocation))
                 {
+                    timings.BeginStage("字幕准备");
                     request.Subtitles = await VideoSubtitleLoader.LoadAsync(subtitleLocation, request.Token);
                     EnsureCurrent(request);
                 }
                 if (!string.IsNullOrWhiteSpace(audioEventKey))
                 {
+                    timings.BeginStage("音轨预加载");
                     if (!AudioManager.Instance.SupportsTimeline)
                         throw new InvalidOperationException("视频音轨需要已初始化且支持 Seek/位置查询的音频后端。");
                     request.AudioScope = AudioManager.Instance.CreateScope("VideoPlayback");
-                    await AudioManager.Instance.PreloadAudioAsync(audioEventKey, request.AudioScope, request.Token);
+                    await VideoAudioTrackLoader.PreloadAsync(
+                        audioEventKey, request.AudioScope, timings, request.Token);
                     EnsureCurrent(request);
                 }
                 m_player.SetLoadingProgress(0.8f);
 
-                await m_player.PrepareVideoAsync(request.Video.FilePath, startTimeSeconds, request.Token);
+                timings.BeginStage("播放器准备合计");
+                try
+                {
+                    await m_player.PrepareVideoAsync(request.Video.FilePath, startTimeSeconds, request.Token);
+                }
+                finally
+                {
+                    timings.AddDetail("播放器明细", m_player.PreparationTimingSummary);
+                }
                 EnsureCurrent(request);
+                timings.BeginStage("字幕绑定及前台等待");
                 // 准备首帧会解除旧会话，字幕应在该阶段完成后再绑定。
                 m_player.SetSubtitleTrack(request.Subtitles);
                 m_player.SetLoadingProgress(0.95f);
                 if (request.AudioScope != null) ToMilliseconds(m_player.DurationSeconds);
                 await WaitForForegroundAsync(request);
+                timings.BeginStage("音轨启动");
                 await StartAudioAsync(request);
                 EnsureCurrent(request);
+                timings.BeginStage("前台等待及视频启动");
                 await WaitForForegroundAsync(request);
                 m_player.SetLoadingProgress(1);
                 EnsureCurrent(request);

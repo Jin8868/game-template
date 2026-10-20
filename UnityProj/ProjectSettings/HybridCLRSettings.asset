@@ -30,6 +30,7 @@ MonoBehaviour:
   - System
   - System.Core
   - UniTask
+  - UnityEngine.AndroidJNIModule
   - UnityEngine.CoreModule
   - mscorlib
   outputLinkFile: HybridCLRGenerate/link.xml

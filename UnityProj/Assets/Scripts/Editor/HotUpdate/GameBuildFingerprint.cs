@@ -156,6 +156,7 @@ namespace Game.Editor
         internal static string Package(string packageName)
         {
             var paths = new SortedSet<string>(StringComparer.Ordinal);
+            if (packageName == "AudioPackage") AddIfExists(paths, "Assets/Settings/VideoAudioStreaming.json");
             AssetBundleCollectorPackage package = AssetBundleCollectorSettingData.Setting.GetPackage(packageName);
             foreach (AssetBundleCollectorGroup group in package.Groups)
             {

@@ -15,6 +15,13 @@ namespace Game.Video
         internal static async UniTask<VideoResourceLease> LoadAsync(string location, string packageName,
             IProgress<float> progress, CancellationToken cancellationToken)
         {
+            return await LoadAsync(location, packageName, progress, cancellationToken, null);
+        }
+
+        internal static async UniTask<VideoResourceLease> LoadAsync(string location, string packageName,
+            IProgress<float> progress, CancellationToken cancellationToken, PulsePreparationTimings timings)
+        {
+            timings?.BeginStage("视频地址解析");
             cancellationToken.ThrowIfCancellationRequested();
             if (string.IsNullOrWhiteSpace(location)) throw new ArgumentException("视频地址不能为空。", nameof(location));
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -27,7 +34,10 @@ namespace Game.Video
             if (Uri.TryCreate(location, UriKind.Absolute, out Uri address))
             {
                 if (address.Scheme == Uri.UriSchemeHttp || address.Scheme == Uri.UriSchemeHttps)
+                {
+                    timings?.BeginStage("CDN下载及文件校验");
                     return await DownloadAsync(address.AbsoluteUri, progress, cancellationToken);
+                }
                 if (address.IsFile) return LoadLocal(address.LocalPath);
                 if (!Path.IsPathRooted(location)) throw new NotSupportedException("不支持的视频协议：" + address.Scheme);
             }
@@ -38,8 +48,23 @@ namespace Game.Video
             var trace = new VideoPlaybackTrace("YooAssets 视频");
             try
             {
+                timings?.BeginStage("VideoPackage就绪");
                 await ResourceManager.Instance.EnsurePackageAsync(packageName, CancellationToken.None)
                     .AttachExternalCancellation(cancellationToken);
+#if UNITY_ANDROID && !UNITY_EDITOR
+                timings?.BeginStage("APK视频来源检查");
+                cancellationToken.ThrowIfCancellationRequested();
+                if (VideoBuildinAddressResolver.TryGetAddress(
+                    location, packageName, out string buildinAddress, out string fallbackReason))
+                {
+                    timings?.AddDetail("视频来源", "APK直读，无整文件落盘");
+                    trace.Complete();
+                    return new VideoResourceLease(buildinAddress);
+                }
+                timings?.AddDetail("视频直读回退", fallbackReason);
+#endif
+                timings?.AddDetail("视频来源", "YooAsset原始文件租约");
+                timings?.BeginStage("RawFile加载及租约");
                 RawFileLease rawFile = await ResourceManager.Instance.LoadRawFileAsync(
                     location, packageName, cancellationToken);
                 trace.Complete();

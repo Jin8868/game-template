@@ -9,6 +9,8 @@ namespace Game.Editor
     {
         internal static string Build(string packageName, string version, bool copyBuildin)
         {
+            // 在 Collector 验证和实际构建前准备视频长音轨，普通资源包不触发媒体转换。
+            if (packageName == "AudioPackage") GameVideoAudioPackageBuilder.Prepare();
             AssetBundleCollectorSettingData.Setting.CheckPackageConfigError(packageName);
             string pipelineName = GetPipeline(packageName);
             BuildParameters parameters;

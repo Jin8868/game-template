@@ -1,3 +1,4 @@
+using AlloyFramework;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -12,7 +13,7 @@ namespace Game
     /// </summary>
     [DefaultExecutionOrder(-12000)]
     [RequireComponent(typeof(Reporter))]
-    public sealed class GameLogViewerController : MonoBehaviour
+    public sealed class GameLogViewerController : MonoBehaviour, IStartupLogViewer
     {
         private static GameLogViewerController m_instance; // 独立于业务资源系统的日志窗口实例。
         private const float INPUTCHECKINTERVAL = 0.25f; // 限制全场景输入与画布节点扫描频率。
@@ -48,6 +49,13 @@ namespace Game
         {
             if (m_instance == null) return;
             m_instance.HideWindow();
+        }
+
+        bool IStartupLogViewer.IsVisible => IsVisible;
+
+        void IStartupLogViewer.Show()
+        {
+            Show();
         }
 
         private void Awake()

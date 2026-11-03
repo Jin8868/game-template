@@ -227,7 +227,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_AspectMode: 4
-  m_AspectRatio: 2.1666665
+  m_AspectRatio: 1.7777778
 --- !u!1 &1727021032
 GameObject:
   m_ObjectHideFlags: 0
@@ -462,13 +462,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!1660057539 &9223372036854775807
-SceneRoots:
-  m_ObjectHideFlags: 0
-  m_Roots:
-  - {fileID: 1850912371}
-  - {fileID: 1727021036}
-  - {fileID: 2100000001}
 --- !u!1 &2100000000
 GameObject:
   m_ObjectHideFlags: 0
@@ -511,6 +504,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: df1e232fbcaca6642b7b9e56a3f1d18c, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_settings: {fileID: 11400000, guid: d6a8f7cc97a34e85b4c03888120f4c0f, type: 2}
+  m_startupScreen: {fileID: 807936311}
+--- !u!1660057539 &9223372036854775807
+SceneRoots:
+  m_ObjectHideFlags: 0
+  m_Roots:
+  - {fileID: 1850912371}
+  - {fileID: 1727021036}
+  - {fileID: 2100000001}

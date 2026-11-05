@@ -14,9 +14,6 @@ namespace Game
         /// <summary>当前启动步骤的日志名称。</summary>
         public string Name => "初始化项目网络";
 
-        /// <summary>当前步骤占用一个真实 Loading 步骤。</summary>
-        public int StepCount => 1;
-
         /// <summary>安装项目网络注册表，具体协议与连接由项目接入。</summary>
         /// <param name="loadingSession">共享的 Loading 会话；无展示时可为空。</param>
         /// <param name="cancellationToken">启动取消令牌。</param>

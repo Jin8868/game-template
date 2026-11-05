@@ -9,9 +9,6 @@ namespace Game
         /// <summary>当前步骤的日志名称。</summary>
         public string Name => "注册业务 Model";
 
-        /// <summary>当前步骤占用一个真实 Loading 步骤。</summary>
-        public int StepCount => 1;
-
         /// <summary>调用集中注册入口，尚不创建具体 Model 实例。</summary>
         /// <param name="loadingSession">共享的 Loading 会话；无展示时可为空。</param>
         /// <param name="cancellationToken">用于取消启动的令牌。</param>

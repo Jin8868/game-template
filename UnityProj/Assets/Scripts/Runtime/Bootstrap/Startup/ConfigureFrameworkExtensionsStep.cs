@@ -11,9 +11,6 @@ namespace Game
         /// <summary>当前启动步骤的日志名称。</summary>
         public string Name => "配置框架业务扩展";
 
-        /// <summary>当前步骤占用一个真实 Loading 步骤。</summary>
-        public int StepCount => 1;
-
         /// <summary>
         /// 安装业务 UI 定义字典和 Luban 导航配置适配器。
         /// </summary>

@@ -9,9 +9,6 @@ namespace Game
         /// <summary>启动步骤的日志名称。</summary>
         string Name { get; }
 
-        /// <summary>当前步骤包含的真实 Loading 步骤数。</summary>
-        int StepCount { get; }
-
         /// <summary>
         /// 执行当前业务启动步骤。
         /// </summary>

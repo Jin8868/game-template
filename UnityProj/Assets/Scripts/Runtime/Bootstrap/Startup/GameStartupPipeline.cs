@@ -7,26 +7,11 @@ using UnityEngine.Scripting;
 
 namespace Game
 {
-    internal sealed class GameStartupPipeline : IGameStartup
+    internal sealed class GameStartupPipeline
     {
         private readonly List<IGameStartupStep> m_steps = new List<IGameStartupStep>(); // 按声明顺序执行。
         private int m_startedStepCount; // 已开始执行、需要逆序释放的步骤数。
         private bool m_hasRun; // 管线是否已经执行过。
-
-        /// <summary>所有业务步骤声明的真实 Loading 步骤总数。</summary>
-        public int StepCount
-        {
-            get
-            {
-                int stepCount = 0;
-                foreach (var step in m_steps)
-                {
-                    stepCount += step.StepCount;
-                }
-
-                return stepCount;
-            }
-        }
 
         [Preserve]
         internal GameStartupPipeline()
@@ -66,18 +51,6 @@ namespace Game
             }
 
             m_steps.Add(step);
-        }
-
-        /// <summary>由框架在所有系统就绪后调用，初始化本项目注册的业务功能。</summary>
-        /// <param name="loadingSession">与游戏入口共享的 Loading 会话。</param>
-        /// <param name="cancellationToken">用于取消业务初始化的令牌。</param>
-        /// <returns>全部业务功能初始化完成的任务。</returns>
-        /// <exception cref="InvalidOperationException">业务初始化管线已经执行过。</exception>
-        public UniTask InitializeAsync(
-            IStartupLoadingSession loadingSession,
-            CancellationToken cancellationToken)
-        {
-            return RunAsync(loadingSession, cancellationToken);
         }
 
         /// <summary>执行全部业务启动步骤。</summary>

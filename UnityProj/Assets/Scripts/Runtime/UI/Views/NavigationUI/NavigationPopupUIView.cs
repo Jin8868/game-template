@@ -17,6 +17,11 @@ namespace Game.UI
         public AlloyFramework.UI.UIInfiniteList ListScrollView => m_listScrollView;
 
         [UnityEngine.SerializeField, AlloyFramework.UI.UIBindingReference]
+        private AlloyFramework.UI.UIIrregularList m_rlistScrollView;
+
+        public AlloyFramework.UI.UIIrregularList RlistScrollView => m_rlistScrollView;
+
+        [UnityEngine.SerializeField, AlloyFramework.UI.UIBindingReference]
         private UnityEngine.UI.Text m_txtStatus;
 
         public UnityEngine.UI.Text TxtStatus => m_txtStatus;

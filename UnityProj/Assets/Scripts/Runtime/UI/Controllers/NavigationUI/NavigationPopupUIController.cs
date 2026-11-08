@@ -11,6 +11,8 @@ namespace Game.UI
         
         protected override void OnCreate()
         {
+            // 直接传入普通布局对象，无需在预制体上挂载圆环布局组件。
+            View.RlistScrollView.SetLayout(new PopupRingLayout(radius: 160f, visibleCount: 8));
             View.BtnBack.onClick.AddListener(Back);
         }
 
@@ -24,19 +26,27 @@ namespace Game.UI
             }
 
             // 首次打开只执行数据初始化，需要在此建立列表绑定。
-            View.ListScrollView.BindData(m_dataList);
+            //View.ListScrollView.BindData(m_dataList);
+
+            // 圆环复用相同演示数据，先定位到中间项以展示完整的一圈。
+            View.RlistScrollView.BindData(m_dataList);
+            View.RlistScrollView.SetLayout(new PopupRingLayout(800.0f,6,200));
+            View.RlistScrollView.ScrollToIndex(4, EUIListAlignment.Center);
         }
 
         protected override void OnOpen()
         {
             // 首次打开不经过 OnRefresh，显示完成后单独触发定位。
             // 先提交初始 Canvas 布局，避免下一帧尺寸变化取消滚动动画。
-            View.ListScrollView.ScrollToIndex(20, EUIListAlignment.Center, true, 0.5f);
+            //UnityEngine.Canvas.ForceUpdateCanvases();
+            //View.ListScrollView.ScrollToIndex(20, EUIListAlignment.Center, true, 0.5f);
+            View.RlistScrollView.ScrollToIndex(20, EUIListAlignment.Center, true, 0.5f);
         }
 
         protected override void OnRefresh(UIEmptyData data)
         {
             View.TxtStatus.text = "弹窗已刷新。";
+            View.RlistScrollView.Refresh();
         }
 
         protected override void OnDispose()

@@ -33,7 +33,7 @@ MonoBehaviour:
   - UnityEngine.AndroidJNIModule
   - UnityEngine.CoreModule
   - mscorlib
-  outputLinkFile: HybridCLRGenerate/link.xml
+  outputLinkFile: ../Library/HybridCLR/LinkerDependencies.xml
   outputAOTGenericReferenceFile: ../BuildArtifacts/HybridCLRGenerated/AOTGenericReferences.cs
   maxGenericReferenceIteration: 10
   maxMethodBridgeGenericIteration: 10

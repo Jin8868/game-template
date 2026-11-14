@@ -473,7 +473,7 @@ GameObject:
   - component: {fileID: 2100000001}
   - component: {fileID: 2100000002}
   m_Layer: 0
-  m_Name: BootSettings
+  m_Name: Boot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

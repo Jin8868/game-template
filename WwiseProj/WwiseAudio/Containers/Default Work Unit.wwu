@@ -3,7 +3,7 @@
 	<Containers>
 		<WorkUnit Name="Default Work Unit" ID="{CC68799A-AC03-4986-B809-19492930435E}" PersistMode="Standalone">
 			<ChildrenList>
-				<PropertyContainer Name="AlloyBGM" ID="{A6EC0F2F-8D23-45CD-BC6F-B5BA3538FB95}">
+				<PropertyContainer Name="AlloyBGM" ID="{A6EC0F2F-8D23-45CD-BC6F-B5BA3538FB95}" ShortID="553725289">
 					<ReferenceList>
 						<Reference Name="OutputBus">
 							<ObjectRef Name="BGM" ID="{883486BD-82C6-4116-9B9F-C6C5BC7FDC76}" WorkUnitID="{77489B22-B793-49AF-8FFB-4D6BBF02C1ED}" />
@@ -11,7 +11,7 @@
 					</ReferenceList>
 					<ObjectLists>
 						<ObjectList Name="RTPC">
-							<RTPC Name="" ID="{10E34579-316F-4AAB-9226-F05E9A502B10}">
+							<RTPC Name="" ID="{10E34579-316F-4AAB-9226-F05E9A502B10}" ShortID="972048902">
 								<PropertyList>
 									<Property Name="PropertyName" Type="string" Value="Volume" />
 								</PropertyList>
@@ -30,7 +30,6 @@
 														<XPos>-200</XPos>
 														<YPos>-200</YPos>
 														<Flags>5</Flags>
-														<SegmentShape>Linear</SegmentShape>
 													</Point>
 													<Point>
 														<XPos>0</XPos>
@@ -46,39 +45,20 @@
 						</ObjectList>
 					</ObjectLists>
 				</PropertyContainer>
-				<PropertyContainer Name="AlloySFX" ID="{DF82A529-FD08-4746-BC64-9B96F941CC3D}">
+				<PropertyContainer Name="AlloySFX" ID="{DF82A529-FD08-4746-BC64-9B96F941CC3D}" ShortID="563528691">
 					<ReferenceList>
 						<Reference Name="OutputBus">
 							<ObjectRef Name="SFX" ID="{C65A8005-C67E-4FF6-B931-3CD61E1D6330}" WorkUnitID="{77489B22-B793-49AF-8FFB-4D6BBF02C1ED}" />
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
-						<Sound Name="ButtonClick" ID="{1BED18BA-996A-42C1-AFE3-566C0B14E0CC}" ShortID="339957141">
-							<ReferenceList>
-								<Reference Name="Conversion">
-									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{084ADA61-9F04-46AC-A794-60A83DDCA2A2}" />
-								</Reference>
-								<Reference Name="OutputBus">
-									<ObjectRef Name="SFX" ID="{C65A8005-C67E-4FF6-B931-3CD61E1D6330}" WorkUnitID="{77489B22-B793-49AF-8FFB-4D6BBF02C1ED}" />
-								</Reference>
-							</ReferenceList>
-							<ChildrenList>
-								<AudioFileSource Name="AlloyButtonClick" ID="{43A8132C-2534-4034-A939-B359706578F4}">
-									<Language>SFX</Language>
-									<AudioFile>AlloyButtonClick.wav</AudioFile>
-									<MediaIDList>
-										<MediaID ID="133108369" />
-									</MediaIDList>
-								</AudioFileSource>
-							</ChildrenList>
-							<ActiveSourceList>
-								<ActiveSource Name="AlloyButtonClick" ID="{43A8132C-2534-4034-A939-B359706578F4}" Platform="Linked" />
-							</ActiveSourceList>
-						</Sound>
+
+
+
 					</ChildrenList>
 					<ObjectLists>
 						<ObjectList Name="RTPC">
-							<RTPC Name="" ID="{F4362A6E-211F-423D-89E1-9EA927F99A54}">
+							<RTPC Name="" ID="{F4362A6E-211F-423D-89E1-9EA927F99A54}" ShortID="973323159">
 								<PropertyList>
 									<Property Name="PropertyName" Type="string" Value="Volume" />
 								</PropertyList>
@@ -97,7 +77,6 @@
 														<XPos>-200</XPos>
 														<YPos>-200</YPos>
 														<Flags>5</Flags>
-														<SegmentShape>Linear</SegmentShape>
 													</Point>
 													<Point>
 														<XPos>0</XPos>

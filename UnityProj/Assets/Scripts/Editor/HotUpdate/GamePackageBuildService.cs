@@ -67,19 +67,6 @@ namespace Game.Editor
             return result.OutputPackageDirectory;
         }
 
-        internal static string GetOptions(string packageName)
-        {
-            string pipeline = GetPipeline(packageName);
-            return string.Join("|", pipeline,
-                AssetBundleBuilderSetting.GetPackageFileNameStyle(packageName, pipeline),
-                AssetBundleBuilderSetting.GetPackageCompressOption(packageName, pipeline),
-                AssetBundleBuilderSetting.GetPackageUseAssetDependencyDB(packageName, pipeline),
-                AssetBundleBuilderSetting.GetPackageClearBuildCache(packageName, pipeline),
-                AssetBundleBuilderSetting.GetPackageEncyptionServicesClassName(packageName, pipeline),
-                AssetBundleBuilderSetting.GetPackageManifestProcessServicesClassName(packageName, pipeline),
-                AssetBundleBuilderSetting.GetPackageManifestRestoreServicesClassName(packageName, pipeline));
-        }
-
         private static string GetPipeline(string packageName)
         {
             return (packageName == "DefaultPackage" ? EBuildPipeline.ScriptableBuildPipeline :

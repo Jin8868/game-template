@@ -8,7 +8,6 @@ using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
-using YooAsset.Editor;
 
 namespace Game.Editor
 {
@@ -151,81 +150,6 @@ namespace Game.Editor
                 content.Append('\n').Append(normalizedPath).Append(':').Append(hash);
             }
             return new CodeSnapshot { Context = context, Hash = TextHash(content.ToString()), Files = files.ToArray() };
-        }
-
-        internal static string Package(string packageName)
-        {
-            var paths = new SortedSet<string>(StringComparer.Ordinal);
-            if (packageName == "AudioPackage") AddIfExists(paths, "Assets/Settings/VideoAudioStreaming.json");
-            AssetBundleCollectorPackage package = AssetBundleCollectorSettingData.Setting.GetPackage(packageName);
-            foreach (AssetBundleCollectorGroup group in package.Groups)
-            {
-                foreach (AssetBundleCollector collector in group.Collectors)
-                {
-                    if (Directory.Exists(collector.CollectPath))
-                    {
-                        AddDirectory(paths, collector.CollectPath);
-                    }
-                    else
-                    {
-                        AddIfExists(paths, collector.CollectPath);
-                        AddIfExists(paths, collector.CollectPath + ".meta");
-                    }
-                }
-            }
-            // 记录资源的间接依赖，防止材质、图集或共享配置变化后误跳过。
-            var assets = new List<string>();
-            foreach (string path in paths)
-            {
-                if (!path.EndsWith(".meta", StringComparison.OrdinalIgnoreCase))
-                {
-                    assets.Add(path.Replace('\\', '/'));
-                }
-            }
-            if (packageName == "DefaultPackage")
-            {
-                foreach (string dependency in AssetDatabase.GetDependencies(assets.ToArray(), true))
-                {
-                    AddIfExists(paths, dependency);
-                    AddIfExists(paths, dependency + ".meta");
-                }
-            }
-            AddDirectory(paths, "Assets/Settings/YooAsset");
-            foreach (UnityEditor.Compilation.Assembly assembly in
-                CompilationPipeline.GetAssemblies(AssembliesType.Editor))
-            {
-                if ((assembly.flags & UnityEditor.Compilation.AssemblyFlags.EditorAssembly) == 0)
-                {
-                    continue;
-                }
-                foreach (string source in assembly.sourceFiles)
-                {
-                    AddIfExists(paths, source);
-                }
-            }
-            AddDirectory(paths, "ProjectSettings");
-            AddIfExists(paths, "Packages/packages-lock.json");
-            return HashFiles(paths, BuildContext() + GamePackageBuildService.GetOptions(packageName));
-        }
-
-        internal static string Player()
-        {
-            var paths = new SortedSet<string>(StringComparer.Ordinal);
-            AddDirectory(paths, "Assets/StreamingAssets");
-            AddIfExists(paths, "Assets/Resources/AlloyHotUpdateIdentity.json");
-            foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes)
-            {
-                if (!scene.enabled)
-                {
-                    continue;
-                }
-                foreach (string dependency in AssetDatabase.GetDependencies(scene.path, true))
-                {
-                    AddIfExists(paths, dependency);
-                    AddIfExists(paths, dependency + ".meta");
-                }
-            }
-            return HashFiles(paths, Code(true));
         }
 
         internal static string DirectoryHash(string directory)

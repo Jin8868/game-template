@@ -119,7 +119,7 @@ namespace Game.Editor
 
             // 重新构建全部资源包并复制内置资源，不计算用于判断复用的输入及产物指纹。
             packages.Add(BuildPackage("AudioPackage", true, "2/5"));
-            packages.Add(BuildPackage("VideoPackage", true, "3/5"));
+            AddVideoPackage(packages, true, "3/5");
             packages.Add(BuildPackage("DefaultPackage", true, "4/5"));
 
             BeginStep("5/5 Unity Player", "重新构建完整安装包");
@@ -240,16 +240,40 @@ namespace Game.Editor
             {
                 EndStep("跳过", "Default 模式只发布资源补丁");
             }
-            BuildStepRecord audio = BuildPackage("AudioPackage", false, "2/4");
-            BuildStepRecord video = BuildPackage("VideoPackage", false, "3/4");
-            BuildStepRecord resources = BuildPackage("DefaultPackage", false, "4/4");
-            packages.Add(audio);
-            packages.Add(video);
-            packages.Add(resources);
+            packages.Add(BuildPackage("AudioPackage", false, "2/4"));
+            AddVideoPackage(packages, false, "3/4");
+            packages.Add(BuildPackage("DefaultPackage", false, "4/4"));
             BeginStep("发布热更新补丁", "复制发布文件并更新服务器版本指针");
             string published = Publish(identity.BaselineID, releaseID, packages);
             EndStep("完成", $"版本={releaseID}，输出={Path.GetFullPath(published)}");
             Debug.Log($"[HotUpdate] 补丁发布完成：{releaseID}。请重启同一个主包验证，未构建 Player。");
+        }
+
+        private static void AddVideoPackage(List<BuildStepRecord> packages, bool buildin, string phase)
+        {
+            // 视频是可选内容；空白模板没有视频时不向 YooAsset 提交空资源包。
+            const string VIDEOROOT = "Assets/Res/Video";
+            if (Directory.Exists(VIDEOROOT) &&
+                Directory.GetFiles(VIDEOROOT, "*.pulse", SearchOption.AllDirectories).Length > 0)
+            {
+                packages.Add(BuildPackage("VideoPackage", buildin, phase));
+                return;
+            }
+
+            BeginStep($"{phase} VideoPackage", "检查可选视频内容");
+            if (buildin)
+            {
+                // 重新出主包时清除上一次的视频内置包，防止已删除的素材继续进入安装包。
+                string packagePath = Path.Combine(
+                    YooAsset.Editor.AssetBundleBuilderHelper.GetStreamingAssetsRoot(), "VideoPackage")
+                    .Replace('\\', '/');
+                if (Directory.Exists(packagePath) && !AssetDatabase.DeleteAsset(packagePath))
+                {
+                    throw new BuildFailedException("无法清理旧视频内置包：" + packagePath);
+                }
+            }
+
+            EndStep("跳过", "未配置视频资源");
         }
 
         private static BuildStepRecord BuildPackage(string packageName, bool buildin, string phase)

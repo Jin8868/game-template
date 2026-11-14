@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using AlloyFramework;
 using AlloyFramework.UI;
@@ -27,7 +28,9 @@ namespace Game
             loadingSession?.BeginStep(EStartupLoadingStage.InitializingBusiness, Name);
 
             // 先安装启动时构建的 UI 定义字典，再一次性校验全部导航配置引用。
-            UIManager.Instance.SetDefinitionProvider(GameUI.DefinitionProvider);
+            // 创建首个业务 UI 后，将此空字典替换为生成的 GameUI.DefinitionProvider。
+            UIManager.Instance.SetDefinitionProvider(
+                new UIDefinitionDictionaryProvider(new Dictionary<string, UIDefinition>()));
             UIManager.Instance.ConfigureNavigation(
                 new LubanUIJumpConfigProvider(GameConfig.StartupTables.UIJumpConfigTable));
             cancellationToken.ThrowIfCancellationRequested();

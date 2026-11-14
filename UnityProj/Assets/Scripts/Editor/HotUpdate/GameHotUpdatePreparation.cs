@@ -62,18 +62,8 @@ namespace Game.Editor
                     "UniTask", "Luban.Runtime", "UnityEngine.CoreModule"
                 };
             }
+            settings.outputLinkFile = GameLinkerConfiguration.GENERATEDPATH;
             HybridCLRSettings.Save();
-
-            // Default 模式显式保留静态业务入口，HybridCLR 模式交由官方工具处理热更代码。
-            const string defaultLinkPath = "Assets/HybridCLRGenerate/DefaultEntry/link.xml";
-            Directory.CreateDirectory(Path.GetDirectoryName(defaultLinkPath));
-            string defaultLink = entrySettings.CodeMode == EGameCodeMode.Default ?
-                $"<linker><assembly fullname=\"{entrySettings.RuntimeAssemblyName}\" preserve=\"all\" /></linker>" :
-                "<linker />";
-            if (!File.Exists(defaultLinkPath) || File.ReadAllText(defaultLinkPath) != defaultLink)
-            {
-                File.WriteAllText(defaultLinkPath, defaultLink);
-            }
 
             // 两个平台使用相同 API 环境，Android 首期选择 ARM64。
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.IL2CPP);
